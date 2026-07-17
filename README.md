@@ -223,7 +223,7 @@ python3 scripts/compose_video.py < segments.json
 
 ---
 
-## 已知限制
+## 已知限制（第二版会进行优化）
 
 1. **AI 插图水印** — 部分图像生成 API 会在图片右下角添加水印，合成前可用 PIL 裁剪底部
 2. **标题进度条** — 阶段3生成了板块标题，但当前 compose_video.py 未将其渲染为视频中的进度条 overlay
