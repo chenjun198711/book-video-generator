@@ -21,6 +21,8 @@
 - 每个分镜配 AI 插图 + TTS 配音 + 字幕
 - 全程约 119 秒，文件大小约 6MB
 
+**演示视频**：[`demo/原子习惯_三分钟精读书.mp4`](demo/原子习惯_三分钟精读书.mp4)（点击在线播放）
+
 ---
 
 ## 工作流程
@@ -67,6 +69,8 @@ book-video-generator/
 ├── README.md                         # 本文件
 ├── LICENSE                           # MIT
 ├── .gitignore
+├── demo/                             # 演示视频
+│   └── 原子习惯_三分钟精读书.mp4        # 《原子习惯》完整生成效果
 ├── references/
 │   ├── prompts.md                    # 3个LLM提示词原文 + 图像参数 + 代码节点逻辑
 │   ├── CROSS_PLATFORM.md             # 各平台详细安装适配指南
@@ -96,7 +100,7 @@ book-video-generator/
 
 ```bash
 # 示例：克隆到 WorkBuddy 技能目录
-git clone https://github.com/YOUR_USERNAME/book-video-generator.git \
+git clone https://github.com/chenjun198711/book-video-generator.git \
   ~/.workbuddy/skills/book-video-generator
 ```
 
