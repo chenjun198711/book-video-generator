@@ -1,0 +1,273 @@
+---
+name: book-video-generator
+description: 三分钟精读一本书视频生成器。输入书名+作者，一键生成3分钟读书解说视频（书评文案→AI插图→TTS配音→字幕→最终合成MP4）。触发词：三分钟精读书、生成读书视频、精读一本书、book video、做读书视频、书评视频。跨平台兼容 WorkBuddy / OpenClaw / Codex CLI / TRAE Work。
+---
+
+# 三分钟精读一本书 视频生成器
+
+## 概述
+
+将任意书籍自动生成一个 3 分钟解说视频：从书评文案撰写、分镜生成、AI 插图、TTS 配音到字幕合成，全流程自动化。
+
+源于扣子工作流 "Pipadushu_video_1"，本 Skill 遵循 [Agent Skills 开放标准](https://agentskills.io)，跨平台兼容 WorkBuddy、OpenClaw、Codex CLI、TRAE Work。
+
+使用本地开源工具替代扣子插件：剪映小助手 → ffmpeg，扣子图像生成 → 平台图像生成工具，扣子 TTS → edge-tts。
+
+## 平台工具映射
+
+本 Skill 的工作流涉及 3 个平台相关工具，各平台替代方案如下。执行时根据当前运行平台选择对应工具。
+
+### 联网搜索（阶段 1 用于搜索书籍信息）
+
+| 平台 | 工具 | 说明 |
+|------|------|------|
+| WorkBuddy | `WebSearch` | 内置工具，直接调用 |
+| OpenClaw | 内置 web search | 自动可用 |
+| Codex CLI | `shell: curl` 或 MCP 搜索插件 | 通过 shell 命令或安装搜索 MCP |
+| TRAE Work | 内置联网搜索 | 自动可用 |
+
+### 图像生成（阶段 4a 用于生成分镜插图）
+
+| 平台 | 工具 | 说明 |
+|------|------|------|
+| WorkBuddy | `ImageGen` | 内置延迟工具，调用 DeferExecuteTool |
+| OpenClaw | `tools` 声明 或 插件 | 在 frontmatter 中声明图像生成 tool，或安装图像插件 |
+| Codex CLI | 外部脚本调用 API | 用 Python 脚本调用 DALL-E / Stability AI / 火山引擎等 API |
+| TRAE Work | MCP 图像生成服务 | 通过 MCP 接入火山引擎、通义万相等 |
+
+> 无论使用哪个平台，图像生成的 prompt 统一使用分镜中的 `desc_promopt` 字段。
+
+### LLM 调用（阶段 1-3 用于生成文案和分镜）
+
+所有平台均内置 LLM 对话能力，直接将 `references/prompts.md` 中的 System Prompt 发送给当前平台的 LLM 即可。
+
+## 输入
+
+| 参数 | 说明 | 必填 |
+|------|------|------|
+| `book_name` | 书籍名称 | 是 |
+| `author_name` | 作者名称 | 是 |
+| `ip_name` | 账号名称（用于视频水印） | 否，默认"陈老师AI" |
+
+## 环境准备
+
+执行前确保以下 Python 依赖已安装：
+
+```bash
+pip install edge-tts imageio-ffmpeg pillow
+```
+
+> 脚本会在首次运行时自动安装缺失的依赖，但建议预先安装以避免中断。
+
+ffmpeg 由 `imageio-ffmpeg` 包自动提供二进制，无需单独安装系统级 ffmpeg。
+
+## 完整工作流（5 个阶段）
+
+### 阶段 1：生成书评文案
+
+**目标**：根据书名+作者，用 LLM 生成约 1000 字的 3 分钟视频文案。
+
+**操作**：
+1. 用当前平台的**联网搜索工具**搜索书籍真实信息（简介、解读、出版年份）
+2. 使用 system prompt（见 `references/prompts.md` 第 1 节），要求 LLM 输出 JSON：
+
+```json
+{
+  "book_name": "...",
+  "author_name": "...",
+  "year": "yyyy-MM",
+  "content": "1000+字书评文案（含开篇引言+核心内容+观点提炼）",
+  "category": "图书分类"
+}
+```
+
+**要点**：
+- 文案需满足约 3 分钟口播时长（约 700-1000 字）
+- 开篇引言必须极具吸引力
+- 信息来源需通过搜索获取，确保内容准确
+
+### 阶段 2：生成分镜脚本
+
+**目标**：将书评文案拆分为 8-50 个分镜，每个分镜包含字幕文案、画面描述、AI 图像提示词。
+
+**操作**：
+使用 system prompt（见 `references/prompts.md` 第 2 节），输入阶段 1 的 content，输出：
+```json
+{
+  "list": [
+    {
+      "story_name": "分镜名称",
+      "desc": "画面描述",
+      "cap": "字幕文案（一句话）",
+      "desc_promopt": "图像生成提示词"
+    }
+  ],
+  "keywords": ["重点词1", "重点词2"]
+}
+```
+
+然后在 list 开头插入引言分镜（模仿原工作流 node 150774 的逻辑）：
+```python
+list.insert(0, {
+    "story_name": "引言",
+    "desc": "每日精读一本书",
+    "cap": f"3分钟精读一本书，今天我们读《{book_name}》",
+    "desc_promopt": "每日精读一本书"
+})
+```
+
+**风格约束**：扁平插画风，人物卡通风简洁线条，背景扁平化符号，柔和明亮低饱和度色调。
+
+### 阶段 3：生成标题进度条
+
+**目标**：根据文案内容划分为 4 个板块，每板块 6 字以内标题，用于视频进度条。
+
+**操作**：
+使用 system prompt（见 `references/prompts.md` 第 3 节），输出 4 个标题（title1-title4）。
+
+### 阶段 4：生成素材（并行）
+
+本阶段生成视频所需的全部素材：
+
+#### 4a. AI 插图生成
+
+对每个分镜的 `desc_promopt`，调用当前平台的**图像生成工具**生成插图。
+
+**统一风格参数**（原工作流图像生成节点配置）：
+- 尺寸：1024x768
+- 风格：扁平风（flat illustration）
+- 主角上衣 #FF7F72，裤子 #243139
+- 30% 透明玻璃效果背景
+- 负向提示词：无
+
+**各平台调用方式**：
+
+- **WorkBuddy**：调用 `ImageGen` 工具（通过 DeferExecuteTool），参数 `prompt` = desc_promopt，`size` = "1024x768"
+- **OpenClaw**：调用 frontmatter 中声明的图像生成 tool
+- **Codex CLI**：运行 `python3 scripts/generate_image.py --prompt "<desc_promopt>" --output "scene_001.png"`（需自备 API Key）
+- **TRAE Work**：通过 MCP 调用已接入的图像生成服务
+
+> 生成的图片统一命名为 `scene_000.png` ~ `scene_NNN.png`，存放到 `output/{book_name}/images/` 目录。
+
+#### 4b. TTS 语音合成
+
+对每个分镜的 `cap`（字幕文案），使用 **edge-tts** 生成 MP3 音频。
+
+默认配置：
+- 语音：zh-CN-XiaoxiaoNeural（女声）或 zh-CN-YunxiNeural（男声）
+- 如需修改，调整 `--voice` 参数
+
+运行（所有平台通用）：
+```bash
+python3 scripts/generate_audio.py --text "<字幕>" --output "audio_001.mp3"
+```
+
+批量模式：
+```bash
+python3 scripts/generate_audio.py --batch captions.json --output-dir audio/ --voice "zh-CN-XiaoxiaoNeural"
+```
+
+#### 4c. 开场封面图
+
+为视频第一帧生成专属封面图，包含书名、作者等元素。
+
+标题进度条可作为 HTML/SVG 渲染后截图。
+
+### 阶段 5：视频合成
+
+**目标**：将所有素材合成为最终 MP4 视频。
+
+**操作**：运行 `python3 scripts/compose_video.py`，该脚本执行：
+1. 计算每个分镜时长（基于 TTS 音频时长 + 0.3s 间隔）
+2. 图片缩放/裁剪为 1920x1080（16:9）
+3. 使用 ffmpeg 将图片+音频合成为视频片段
+4. 添加字幕（SRT 格式，白色文字+黑色描边，字号 7% 屏幕高度）
+5. 拼接所有片段为完整视频
+
+**字幕参数**（对应原工作流 add_captions_1 节点）：
+- 字体颜色：白色 (#FFFFFF)
+- 边框颜色：黑色 (#000000)
+- 字号：相对于 1080p 约 76px
+- 位置：底部居中
+
+> Windows 系统默认使用微软雅黑字体（C:/Windows/Fonts/msyh.ttc）。
+> macOS / Linux 系统需修改 compose_video.py 中的 FontName 为系统可用中文字体（如 Noto Sans CJK SC）。
+
+### 输出
+
+最终输出：`output/{book_name}_三分钟精读书.mp4`
+
+## 跨平台安装
+
+### WorkBuddy
+
+技能已安装在 `~/.workbuddy/skills/book-video-generator/`，直接使用。
+
+### OpenClaw
+
+```bash
+# 复制到 OpenClaw 技能目录
+cp -r ~/.workbuddy/skills/book-video-generator ~/.openclaw/skills/
+
+# 或通过 ClawHub 安装（如果已发布）
+openclaw skills install book-video-generator
+```
+
+如需在 frontmatter 中声明图像生成 tool，参考 OpenClaw 文档的 `tools` 字段定义。
+
+### Codex CLI
+
+```bash
+# 1. 开启 Skills 功能（如未开启）
+echo '[features]\nsskills = true' >> ~/.codex/config.toml
+
+# 2. 复制技能目录
+cp -r ~/.workbuddy/skills/book-video-generator ~/.codex/skills/
+
+# 3. 重启 Codex CLI
+# 4. 输入 /skills 确认技能已加载
+```
+
+Codex CLI 无内置图像生成，需在 `scripts/` 目录中添加 `generate_image.py` 脚本，调用外部 API（如 OpenAI DALL-E、Stability AI）。脚本需接受 `--prompt` 和 `--output` 参数。
+
+### TRAE Work
+
+```
+1. 打开 TRAE Work → 规则和技能 → 技能 → 创建 → 导入文件
+2. 上传 SKILL.md 文件
+3. 确保 scripts/ 和 references/ 目录也复制到技能目录
+```
+
+TRAE Work 通过 MCP 接入图像生成服务。在 TRAE 的 MCP 配置中添加火山引擎或通义万相的图像生成 MCP，然后在执行阶段 4a 时通过 MCP 调用。
+
+## 原工作流参考
+
+原始扣子工作流文件位于 `references/workflow-original.yaml`，包含 30+ 节点的完整链路：
+```
+开始 → LLM(DeepSeek V3.2)生成书评 → 上标题总结 → 分镜画面描述
+→ 代码拼接引言 → 批量图像生成+抠图 → TTS语音合成
+→ 创建剪映草稿 → 批量添加图片/字幕/音频 → 保存草稿 → 结束
+```
+
+原始流程依赖**剪映小助手插件**（视频合成核心）、扣子内置**图像生成+抠图**和**TTS**插件。
+本 Skill 使用 ffmpeg、edge-tts、平台图像生成工具替代。
+
+## 快速使用示例
+
+用户说："帮我生成《原子习惯》James Clear 的 3 分钟精读视频"
+
+执行流程：
+1. 搜索"原子习惯 James Clear 简介 书评"
+2. 用阶段 1 prompt 生成书评文案
+3. 用阶段 2 prompt 生成分镜脚本
+4. 用阶段 3 prompt 生成标题进度条
+5. 对每个分镜：图像生成工具生成插图 + edge-tts 生成配音
+6. compose_video.py 合成最终视频
+7. 输出 `output/原子习惯_三分钟精读书.mp4`
+
+## 资源文件
+
+- `references/prompts.md` — 所有 LLM 提示词原文（平台无关，可直接复用）
+- `references/workflow-original.yaml` — 原始扣子工作流（完整 YAML 备份）
+- `scripts/compose_video.py` — 视频合成脚本（纯 Python + ffmpeg，跨平台）
+- `scripts/generate_audio.py` — TTS 语音生成脚本（纯 Python + edge-tts，跨平台）

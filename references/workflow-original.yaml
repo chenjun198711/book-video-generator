@@ -1,0 +1,3449 @@
+schema_version: 1.0.0
+name: Pipadushu_video_1
+id: 7534653326350565414
+description: "生成《三分钟精读一本书》视频"
+mode: workflow
+icon: FileBizType.BIZ_BOT_ICON/3230818915596240_1754298180874579070.jpeg
+nodes:
+    - id: "100001"
+      type: start
+      title: 开始
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg
+      description: "工作流的起始节点，用于设定启动工作流需要的信息"
+      position:
+        x: -121.44768516942305
+        y: 605.0112986374794
+      parameters:
+        node_outputs:
+            auther_name:
+                type: string
+                required: true
+                value: null
+                description: 作者名称
+            book_name:
+                type: string
+                required: true
+                value: null
+                description: 书籍名称
+            ip_name:
+                type: string
+                required: true
+                value: null
+                default_value: 陈老师AI
+                description: 个人账号名称
+    - id: "900001"
+      type: end
+      title: 结束
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg
+      description: "工作流的最终节点，用于返回工作流运行后的结果信息"
+      position:
+        x: 13554.654454389107
+        y: 592.0112986374795
+      parameters:
+        node_inputs:
+            - name: output
+              input:
+                type: string
+                value:
+                    path: draft_url
+                    ref_node: "104782"
+        terminatePlan: returnVariables
+    - id: "180681"
+      type: batch
+      title: 批处理
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Batch-v2.jpg
+      description: "通过设定批量运行次数和逻辑，运行批处理体内的任务"
+      position:
+        x: 2825.504871544083
+        y: 592.0112986374795
+      canvas_position:
+        x: 2415.504871544083
+        y: 886.7112986374796
+      parameters:
+        batchSize:
+            type: integer
+            value:
+                content: 50
+                rawMeta:
+                    type: 2
+                type: literal
+        concurrentSize:
+            type: integer
+            value:
+                content: 2
+                rawMeta:
+                    type: 2
+                type: literal
+        node_inputs:
+            - name: list
+              input:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        cap:
+                            type: string
+                            value: null
+                        desc:
+                            type: string
+                            value: null
+                        desc_promopt:
+                            type: string
+                            value: null
+                        story_name:
+                            type: string
+                            value: null
+                    value: null
+                value:
+                    path: list
+                    ref_node: "150774"
+        node_outputs:
+            data_list:
+                value:
+                    type: image
+                    items:
+                        type: string
+                        value: null
+                    value:
+                        path: data
+                        ref_node: "192530"
+      nodes:
+        - id: "126048"
+          type: image_generate
+          title: 图像生成
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-ImageGeneration-v2.jpg
+          description: "通过文字描述/添加参考图生成图片"
+          position:
+            x: 180
+            y: 0
+          parameters:
+            modelSetting:
+                custom_ratio:
+                    height: 768
+                    ratio_type: fixed
+                    width: 1024
+                ddim_steps: 40
+                model: 8
+            node_inputs:
+                - name: desc_info
+                  input:
+                    type: string
+                    value:
+                        path: list.desc_promopt
+                        ref_node: "180681"
+                - name: desc
+                  input:
+                    type: string
+                    value:
+                        path: list.desc
+                        ref_node: "180681"
+            node_outputs:
+                data:
+                    type: image
+                    value: null
+                msg:
+                    type: string
+                    value: null
+            prompt:
+                negative_prompt: ""
+                prompt: 扁平风，主角上衣颜色#FF7F72，裤子颜色#243139，扁平背景：{{desc_info}}，Transparent glass with 30% opacity
+            references: []
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                timeoutMs: 60000
+        - id: "192530"
+          type: plugin
+          title: cutout
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-plugin-cutout-v2.jpg
+          description: "保留图片前景主体，输出透明背景(.png)"
+          position:
+            x: 640
+            y: 14
+          parameters:
+            apiParam:
+                - name: apiID
+                  input:
+                    type: string
+                    value: "7438919188246429731"
+                - name: apiName
+                  input:
+                    type: string
+                    value: "cutout"
+                - name: pluginID
+                  input:
+                    type: string
+                    value: "7438919188246413347"
+                - name: pluginName
+                  input:
+                    type: string
+                    value: "抠图"
+                - name: pluginVersion
+                  input:
+                    type: string
+                    value: ""
+                - name: tips
+                  input:
+                    type: string
+                    value: ""
+                - name: outDocLink
+                  input:
+                    type: string
+                    value: ""
+            inputDefs:
+                - defaultValue: 0
+                  description: 输出图模式，可选透明背景图/蒙版矢量图, enum list is [0,1], default value is 0
+                  enum:
+                    - 0
+                    - 1
+                  enumVarNames:
+                    - 透明背景图
+                    - 蒙版矢量图
+                  input: {}
+                  name: output_mode
+                  required: false
+                  title: 输出图模式
+                  type: integer
+                - description: 自定义抠图内容的提示词，不填时默认保留主体抠图
+                  input: {}
+                  name: prompt
+                  required: false
+                  title: 提示词
+                  type: string
+                - assistType: 2
+                  description: 待抠图的图片
+                  input: {}
+                  name: url
+                  required: true
+                  title: 上传图
+                  type: image
+            node_inputs:
+                - name: url
+                  input:
+                    value:
+                        path: data
+                        ref_node: "126048"
+                - name: only_mask
+                  input:
+                    type: string
+                    value: "0"
+                - name: output_mode
+                  input:
+                    type: string
+                    value: "0"
+            node_outputs:
+                data:
+                    type: image
+                    value: null
+                    description: 透明背景图，在输出模式为透明背景时生效
+                errorBody:
+                    type: object
+                    properties:
+                        errorCode:
+                            type: string
+                            value: null
+                        errorMessage:
+                            type: string
+                            value: null
+                    value: null
+                isSuccess:
+                    type: boolean
+                    value: null
+                mask:
+                    type: string
+                    value: null
+                    description: 抠图区域蒙板矢量图，在输出模式为蒙版矢量图时生效
+                msg:
+                    type: string
+                    value: null
+            settingOnError:
+                dataOnErr: |-
+                    {
+                        "data": "",
+                        "mask": "",
+                        "msg": ""
+                    }
+                processType: 2
+                retryTimes: 0
+                switch: true
+                timeoutMs: 180000
+      edges:
+        - source_node: "180681"
+          target_node: "126048"
+          source_port: batch-function-inline-output
+        - source_node: "126048"
+          target_node: "192530"
+        - source_node: "192530"
+          target_node: "180681"
+          target_port: batch-function-inline-input
+    - id: "173538"
+      type: llm
+      title: 大模型_分镜画面描述
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 1551.79189047078
+        y: 574.1809851799528
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: generationDiversity
+              input:
+                type: string
+                value: default_val
+            - name: apiMode
+              input:
+                type: integer
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "9999"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: thinkingType
+              input:
+                type: string
+                value: disabled
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelName
+              input:
+                type: string
+                value: DeepSeek-V3.2
+            - name: modelType
+              input:
+                type: integer
+                value: "1764929611"
+            - name: maxCompletionTokens
+              input:
+                type: string
+                value: "0"
+            - name: parameters
+              input:
+                type: object
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: |-
+                    文案内容如下：
+                    {{content}}
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    # 角色
+                    你是一位专业且富有创意的视频分镜描述专家，专注于3分钟读完一本书视频文案的分镜创作，能够将书籍内容转化为生动、形象且符合要求的视频分镜描述。
+
+                    ## 技能
+                    ### 技能 1: 创作视频分镜描述
+                    1. 仔细研读用户提供的3分钟读完一本书的视频文案内容，全面理解其中的书籍核心内容、情节发展以及情感氛围等关键要素。
+                    2. 按照要求创作视频分镜描述，确保：
+                        - 字幕文案分段：每个段落均由一句话构成，语句简洁明了，表达清晰流畅，同时具备节奏感。
+                        - 分镜描述：画面需能准确体现书籍内容情节，描述要精准、细致地展现情节细节以及情感氛围等方面。
+                        - 字幕文案必须严格按照用户给的文案拆分，不能修改提供的内容。
+                        - 分镜数量至少8个， 不超过50个。
+                    ### 技能 2: 生成分镜图像提示词
+                    - 依据分镜描述和整本书的内容，生成对应的[分镜图像提示词]
+                    - 风格描述：
+                    人物：卡通化、简洁线条
+                    背景：符号化、扁平化设计（如房子、信用卡、存钱罐等）
+                    色调：柔和、明亮、低饱和度
+                    动作：简单但富有表现力（如抓头、思考、惊讶等）
+                    细节：用简单的图形和线条表现复杂概念（如箭头、货币符号等）
+                    -示例：一个人正在思考财务问题，周围有存钱罐、信用卡、房子、下降箭头等符号。
+                    提示词风格参考：
+                    “一个年轻人正在抓头思考，周围有存钱罐、信用卡、房子、下降箭头等符号，卡通化风格，柔和色调，简洁线条，表情夸张，背景用扁平化符号表现，整体风格轻松幽默。”
+
+                    ### 技能3: 挑选文案中重点词
+                    - 依据原始文案，从文案中截取对应的重点词汇，输出keywords
+                    - 注意直接截取出原有词，不要带标点符号，且要在句子中存在
+
+                    ### 技能4：输出内容
+                    输出包含分镜名称、分镜描述、字幕文案、图像提示词的内容，具体格式如下：
+                    {
+                     "list":[
+                    {
+                        "story_name":"分镜名称",
+                        "desc":"分镜描述",
+                        "cap":"对应字幕文案",
+                        "desc_promopt":"分镜图像提示词"
+                    }
+                    ],
+                    "keywords":["重点词1","重点词2"]
+                    }
+
+                    ## 限制
+                    - 视频文案及分镜描述必须保持一致。
+                    - 输出内容必须严格按照给定的格式进行组织，不得偏离框架要求。
+                    - 只对用户提供的3分钟读完一本书的视频文案内容进行分镜，不能更改原文。
+                    - 分镜图像提示词要符合整本书和当前段落的语境。
+                    - 输出的keywords必须在对应句子中存在。
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: content
+              input:
+                type: string
+                value:
+                    path: content
+                    ref_node: "132962"
+        node_outputs:
+            keywords:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            list:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        cap:
+                            type: string
+                            value: null
+                        desc:
+                            type: string
+                            value: null
+                        desc_promopt:
+                            type: string
+                            value: null
+                        story_name:
+                            type: string
+                            value: null
+                    value: null
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 600000
+    - id: "169595"
+      type: loop
+      title: 循环
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Loop-v2.jpg
+      description: "用于通过设定循环次数和逻辑，重复执行一系列任务"
+      position:
+        x: 4865.504871544083
+        y: 579.0112986374794
+      canvas_position:
+        x: 4455.504871544083
+        y: 962.0176527152933
+      parameters:
+        loopCount:
+            type: integer
+            value:
+                content: 10
+                rawMeta:
+                    type: 2
+                type: literal
+        loopType: array
+        node_inputs:
+            - name: input
+              input:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        cap:
+                            type: string
+                            value: null
+                        desc:
+                            type: string
+                            value: null
+                        desc_promopt:
+                            type: string
+                            value: null
+                        story_name:
+                            type: string
+                            value: null
+                    value: null
+                value:
+                    path: list
+                    ref_node: "150774"
+        node_outputs:
+            duration_list:
+                value:
+                    type: list
+                    items:
+                        type: integer
+                        value: null
+                    value:
+                        path: duration
+                        ref_node: "199916"
+            output:
+                value:
+                    type: list
+                    items:
+                        type: string
+                        value: null
+                    value:
+                        path: data.link
+                        ref_node: "122703"
+        variableParameters: []
+      nodes:
+        - id: "122703"
+          type: plugin
+          title: speech_synthesis
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg
+          description: "根据音色和文本合成音频"
+          position:
+            x: 180
+            y: 0
+          parameters:
+            apiParam:
+                - name: apiID
+                  input:
+                    type: string
+                    value: "7426655854067367946"
+                - name: apiName
+                  input:
+                    type: string
+                    value: "speech_synthesis"
+                - name: pluginID
+                  input:
+                    type: string
+                    value: "7426655854067351562"
+                - name: pluginName
+                  input:
+                    type: string
+                    value: "语音合成"
+                - name: pluginVersion
+                  input:
+                    type: string
+                    value: ""
+                - name: tips
+                  input:
+                    type: string
+                    value: ""
+                - name: outDocLink
+                  input:
+                    type: string
+                    value: ""
+            inputDefs:
+                - defaultValue: 爽快思思/Skye
+                  description: 音色ID，默认为爽快思思/Skye。详细音色列表参考 https://bytedance.larkoffice.com/docx/WdDOdiB1BoRyBNxlkXWcn0n3nLc, default value is 爽快思思/Skye
+                  input: {}
+                  name: speaker_id
+                  required: false
+                  type: string
+                - defaultValue: 1
+                  description: 语速，范围是[0.2,3]，默认为1，通常保留一位小数即可, default value is 1
+                  input: {}
+                  name: speed_ratio
+                  required: false
+                  type: float
+                - description: 要合成音频的文本内容
+                  input: {}
+                  name: text
+                  required: true
+                  type: string
+                - assistType: 12
+                  description: voice id
+                  input: {}
+                  name: voice_id
+                  required: false
+                  type: string
+                - description: 语音语种，非必填，参考 https://bytedance.larkoffice.com/docx/WdDOdiB1BoRyBNxlkXWcn0n3nLc
+                  input: {}
+                  name: language
+                  required: false
+                  type: string
+            node_inputs:
+                - name: text
+                  input:
+                    type: string
+                    value:
+                        path: input.cap
+                        ref_node: "169595"
+                - name: speed_ratio
+                  input:
+                    type: float
+                    value: 1.2
+                - name: voice_id
+                  input:
+                    type: voice
+                    value: "7426720361733144585"
+            node_outputs:
+                code:
+                    type: float
+                    value: null
+                data:
+                    type: object
+                    properties:
+                        duration:
+                            type: float
+                            value: null
+                            description: 音频时长，单位是s
+                        link:
+                            type: string
+                            value: null
+                    value: null
+                log_id:
+                    type: string
+                    value: null
+                msg:
+                    type: string
+                    value: null
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                timeoutMs: 180000
+        - id: "199916"
+          type: plugin
+          title: get_audio_duration
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg
+          description: "获取音频时长"
+          position:
+            x: 640
+            y: 0
+          parameters:
+            apiParam:
+                - name: apiID
+                  input:
+                    type: string
+                    value: "7474863657353117750"
+                - name: apiName
+                  input:
+                    type: string
+                    value: "get_audio_duration"
+                - name: pluginID
+                  input:
+                    type: string
+                    value: "7457837925833801768"
+                - name: pluginName
+                  input:
+                    type: string
+                    value: "视频合成_剪映小助手"
+                - name: pluginVersion
+                  input:
+                    type: string
+                    value: ""
+                - name: tips
+                  input:
+                    type: string
+                    value: ""
+                - name: outDocLink
+                  input:
+                    type: string
+                    value: ""
+            inputDefs:
+                - description: 音频链接
+                  input: {}
+                  name: mp3_url
+                  required: true
+                  type: string
+            node_inputs:
+                - name: mp3_url
+                  input:
+                    value:
+                        path: data.link
+                        ref_node: "122703"
+            node_outputs:
+                duration:
+                    type: integer
+                    value: null
+                message:
+                    type: string
+                    value: null
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                timeoutMs: 180000
+      edges:
+        - source_node: "169595"
+          target_node: "122703"
+          source_port: loop-function-inline-output
+        - source_node: "122703"
+          target_node: "199916"
+        - source_node: "199916"
+          target_node: "169595"
+          target_port: loop-function-inline-input
+    - id: "168118"
+      type: plugin
+      title: create_draft
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg
+      description: "插件入口-创建草稿"
+      position:
+        x: 8415.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7457837955684515874"
+            - name: apiName
+              input:
+                type: string
+                value: "create_draft"
+            - name: pluginID
+              input:
+                type: string
+                value: "7457837925833801768"
+            - name: pluginName
+              input:
+                type: string
+                value: "视频合成_剪映小助手"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: 高
+              input: {}
+              name: height
+              required: false
+              type: integer
+            - description: 关联创作者
+              input: {}
+              name: user_id
+              required: false
+              type: integer
+            - description: 宽
+              input: {}
+              name: width
+              required: false
+              type: integer
+        node_inputs:
+            - name: height
+              input:
+                type: integer
+                value: 1080
+            - name: user_id
+              input:
+                type: integer
+                value: 10299
+            - name: width
+              input:
+                type: integer
+                value: 1440
+        node_outputs:
+            draft_url:
+                type: string
+                value: null
+            tip_url:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "125268"
+      type: plugin
+      title: add_audios
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg
+      description: "批量添加音频"
+      position:
+        x: 8875.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7457837925833834536"
+            - name: apiName
+              input:
+                type: string
+                value: "add_audios"
+            - name: pluginID
+              input:
+                type: string
+                value: "7457837925833801768"
+            - name: pluginName
+              input:
+                type: string
+                value: "视频合成_剪映小助手"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: '[{"audio_url": "http://example.com/audio1.mp3","duration":120,"start":0,"end":12000000,"audio_effect":"教堂"}]'
+              input: {}
+              name: audio_infos
+              required: true
+              type: string
+            - description: 草稿地址，使用create_draft输出的draft_url即可
+              input: {}
+              name: draft_url
+              required: true
+              type: string
+        node_inputs:
+            - name: audio_infos
+              input:
+                type: string
+                value:
+                    path: infos
+                    ref_node: "180223"
+            - name: draft_url
+              input:
+                value:
+                    path: draft_url
+                    ref_node: "168118"
+        node_outputs:
+            audio_ids:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            draft_url:
+                type: string
+                value: null
+            track_id:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "152586"
+      type: code
+      title: 代码
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg
+      description: "编写代码，处理输入变量来生成返回值"
+      version: v2
+      position:
+        x: 5666.568053742165
+        y: 592.0112986374795
+      parameters:
+        code: "\n\n\n// 在这里，您可以通过 ‘params’  获取节点中的输入变量，并通过 'ret' 输出结果\n// 'params' 和 'ret' 已经被正确地注入到环境中\n// 下面是一个示例，获取节点输入中参数名为‘input’的值：\n// const input = params.input; \n// 下面是一个示例，输出一个包含多种数据类型的 'ret' 对象：\n// const ret = { \"name\": ‘小明’, \"hobbies\": [“看书”, “旅游”] };\nasync function main({ params }: Args): Promise<Output> {\n    const { image_list, list, audio_list, duration_list, bg_image, first_img } = params;\n\n    // 处理音频数据\n    const audioData = [];\n    let audioStartTime = 0;\n    const videoTimelines = [];\n    let maxDuration = 0;\n    \n    image_list.splice(0, 1, first_img);\n    \n    for (let i = 0; i < audio_list.length && i < duration_list.length; i++) {\n        const duration = duration_list[i];\n        audioData.push({\n            audio_url: audio_list[i],\n            duration,\n            start: audioStartTime,\n            end: audioStartTime + duration,\n            audio_effect: \"教学\"\n        });\n        videoTimelines.push({\n            start: audioStartTime,\n            end: audioStartTime + duration\n        });\n        audioStartTime += duration;\n        maxDuration = audioStartTime;\n    }\n\n    // 处理图片数据\n    const imageData = [];\n   \n    // 使用示例\n    const scheduler = new AnimationScheduler();\n\n    // 处理图片序列\n    const imgData = scheduler.process(image_list,duration_list);\n    \n\n\n    // 增加转场特效\n    let zc_mp3 = [];\n    for(let i=0; i<imgData.length;i++){\n        if(i%3==0){\n            imgData[i].transition= \"翻页\";\n            imgData[i].transition_duration = 2000000;\n\n            // 增加对应转场音效\n            zc_mp3.push(\n                {\n                    \"audio_url\": params.zc_mp3_url,\n                    \"duration\": 0,\n                    \"volume\": 8,\n                    \"start\": imgData[i].end - 500000,\n                    \"end\": imgData[i].end + 500000\n                }\n            );\n        } else{\n            const array = [\"向上滑动\", \"放大\"];\n            const randomElement = array[Math.floor(Math.random() * array.length)];\n            imgData[i].in_animation= randomElement;\n        }\n    }\n\n   \n    // 处理背景图片\n    const bgImageData = [\n        {\n            image_url: bg_image,\n            width: 1920,\n            height: 1080,\n            start: 0,\n            end: maxDuration + 1000000\n        }\n    ];\n\n    // 处理首图\n    const firstImageData = [\n        {\n            image_url: first_img,\n            width: 1920,\n            height: 1080,\n            start: 0,\n            end: duration_list[0]-166666\n        }\n    ];\n    \n\n    // 左上角书本名称+作者  \n    // 书名：5  -995/844  #fe8a80\n    // 作者：5  -896/731  #fe8a80     \n    // 右下角IP #b3a6a1   5  582/-452\n    const book_name =[];\n    const book_name_timelines = [];\n    const author_name =[];\n    const author_name_timelines = [];\n    const ip_name =[];\n    const ip_name_timelines = [];\n\n    book_name.push(params.book_name);\n    author_name.push(params.author_name);\n    ip_name.push(params.ip_name);\n    book_name_timelines.push({\n        start:2000000,\n        end: maxDuration + 1000000\n    });\n    author_name_timelines.push({\n        start:3000000,\n        end: maxDuration + 1000000\n    });\n    ip_name_timelines.push({\n        start:1000000,\n        end: maxDuration + 1000000\n    });\n \n    \n  \n  // 处理字幕数据（保持原始返回结构）\n  const captions = list.map(item => item.cap);\n  const subtitleDurations = duration_list;\n\n  \n  const { textTimelines, processedSubtitles } = processSubtitles(\n    captions,\n    subtitleDurations\n  );\n\n\n    let bg_mp3 = [\n        {\n            \"audio_url\": params.mp3_url,\n            \"duration\": 0,\n            \"volume\": 0.1,\n            \"start\": 0,\n            \"end\": maxDuration + 1000000\n        }\n    ]\n\n    \n    const originalArray = processedSubtitles;\n    const firstProcessedSubtitles = originalArray.slice(0, 1); // 前2个元素的独立数组\n    const remainingProcessedSubtitles = originalArray.slice(1);       // 剩余元素的数组\n\n    const first_textTimelines = textTimelines.slice(0, 1); // 前2个元素的独立数组\n    const remainingTextTimelines = textTimelines.slice(1);       // 剩余元素的数组\n\n\n    // 关键词匹配\n    const keywords = params.keywords;\n    const finalResult = assembleResults(\n        keywords,         // keywords_new\n        remainingProcessedSubtitles, // processedSubtitles\n        remainingTextTimelines // textTimelines\n    );\n\n    const firstResult = assembleResults(\n        keywords,         // keywords_new\n        firstProcessedSubtitles, // processedSubtitles\n        first_textTimelines // textTimelines\n    );\n    \n    \n\n    // 构建输出对象\n    const result = {\n        audio_list: JSON.stringify(audioData),\n        image_list: JSON.stringify(imageData),\n        timelines: videoTimelines,\n        text_timelines: remainingTextTimelines,\n        text_cap: remainingProcessedSubtitles,\n\n        first_textTimelines:first_textTimelines,\n        firstProcessedSubtitles:firstProcessedSubtitles,\n\n        max_time: maxDuration,\n        firstImageData: JSON.stringify(firstImageData),\n        bg_image: JSON.stringify(bgImageData),\n        imageDataLeft:JSON.stringify(imgData),\n        // imageDataRight:JSON.stringify(imgData.right),\n        // imgData: imgData,\n        book_name_timelines:book_name_timelines,\n        book_name:book_name,\n        author_name:author_name,\n        author_name_timeline:author_name_timelines,\n        ip_name:ip_name,\n        ip_name_timelines:ip_name_timelines,\n        bg_mp3:JSON.stringify(bg_mp3),\n        zc_mp3:JSON.stringify(zc_mp3),\n        main_text:JSON.stringify(finalResult),\n        first_text:JSON.stringify(firstResult)\n\n    };\n\n    return result;\n}\n\nconst SUB_CONFIG = {\n    MAX_LINE_LENGTH: 25,\n    SPLIT_PRIORITY: ['，',',','：',':','、', '；',';', ' '],\n    TIME_PRECISION: 3,\n    BUFFER_RANGE: 3  // 新增缓冲范围\n  };\n  \n  // 智能分行函数（修复版）\n  function splitLongPhrase(text, maxLen) {\n    if (text.length <= maxLen) return [text];\n    \n    // 扩展查找范围（maxLen + buffer）\n    for (const delimiter of SUB_CONFIG.SPLIT_PRIORITY) {\n      const pos = text.lastIndexOf(delimiter, maxLen + SUB_CONFIG.BUFFER_RANGE);\n      if (pos > 0 && pos <= maxLen + SUB_CONFIG.BUFFER_RANGE) {\n        const splitPos = pos + 1;\n        return [\n          text.substring(0, splitPos).trim(),\n          ...splitLongPhrase(text.substring(splitPos).trim(), maxLen)\n        ];\n      }\n    }\n  \n    // 无标点时按汉字边界分割\n    for (let i = maxLen; i > 0; i--) {\n      if (/[\\p{Unified_Ideograph}]/u.test(text[i])) {\n        return [\n          text.substring(0, i + 1).trim(),\n          ...splitLongPhrase(text.substring(i + 1).trim(), maxLen)\n        ];\n      }\n    }\n  \n    // 强制分割保留更多上下文\n    const splitPos = Math.min(maxLen, text.length);\n    return [\n      text.substring(0, splitPos).trim(),\n      ...splitLongPhrase(text.substring(splitPos).trim(), maxLen)\n    ];\n  }\n  \n  // 处理字幕数据（修复清理逻辑）\n  const processSubtitles = (captions, subtitleDurations) => {\n    // 修改后的正则：保留逗号、顿号等基本标点\n    const cleanRegex = /[\\u3000\\u3002-\\u303F\\uff00-\\uffef\\u2000-\\u206F!\"#$%&'()*+\\-./<=>?@\\\\^_`{|}~]/g;\n    \n    let processedSubtitles = [];\n    let processedSubtitleDurations = [];\n    \n    captions.forEach((text, index) => {\n      const totalDuration = subtitleDurations[index];\n      let phrases = splitLongPhrase(text, SUB_CONFIG.MAX_LINE_LENGTH);\n      \n      // 清理标点时保留分割用标点\n      phrases = phrases.map(p => p.replace(cleanRegex, '').trim())\n                     .filter(p => p.length > 0);\n  \n      if (phrases.length === 0) {\n        processedSubtitles.push('[无内容]');\n        processedSubtitleDurations.push(totalDuration);\n        return;\n      }\n  \n      // 时间分配逻辑保持不变\n      const totalMs = totalDuration * 1000;\n      const totalChars = phrases.reduce((sum, p) => sum + p.length, 0);\n      let accumulatedMs = 0;\n      \n      phrases.forEach((phrase, i) => {\n        const ratio = phrase.length / totalChars;\n        let durationMs = i === phrases.length - 1 \n          ? totalMs - accumulatedMs \n          : Math.round(totalMs * ratio);\n  \n        processedSubtitles.push(phrase);\n        processedSubtitleDurations.push(durationMs / 1000);\n        accumulatedMs += durationMs;\n      });\n    });\n  \n    // 生成时间轴（保持不变）\n    const textTimelines = [];\n    let currentTime = 0;\n    \n    processedSubtitleDurations.forEach(duration => {\n      const preciseStart = currentTime;\n      const preciseEnd = preciseStart + duration;\n      \n      textTimelines.push({\n        start: Number(preciseStart.toFixed(SUB_CONFIG.TIME_PRECISION)),\n        end: Number(preciseEnd.toFixed(SUB_CONFIG.TIME_PRECISION))\n      });\n      \n      currentTime = preciseEnd;\n    });\n  \n    return { textTimelines, processedSubtitles };\n  };\n\n  /*\n * 入场动画预设池（单轨道版）\n * 结构：模式名 -> 轨道位置 -> 可选的动画类型数组\n */\nconst ANIMATION_PRESETS = {\n    // 顺序模式预设\n    SEQUENCE: {\n        left: [\"向上滑动\", \"放大\"]\n    },\n    // 聚焦模式预设\n    FOCUS: {\n        left: [\"放大\", \"向上滑动\"]\n    },\n    // 对称模式预设（调整为单侧配置）\n    SYMMETRIC: {\n        left: [\"向右滑动\", \"放大\"]\n    },\n    // 随机模式预设\n    RANDOM: {\n        left: [\"向右滑动\", \"放大\", \"向下滑动\",\"向左转入\"] \n    }\n};\n\n/*\n * 动画模式枚举\n */\nconst ANIMATION_MODES = {\n    SEQUENTIAL: 'sequential',    // 顺序模式\n    FOCUS: 'focus',             // 聚焦模式\n    SYMMETRIC: 'symmetric',     // 对称模式（单侧实现）\n    RANDOM: 'random'            \n};\n\n/*\n * 全局配置参数（单轨道版本）\n */\nconst CONFIG = {\n    mode: ANIMATION_MODES.SEQUENTIAL,\n    animationPreset: 'SEQUENCE',       \n    trackWeights: { left: 2 },         // 移除右轨道权重\n    overlapTolerance: 1,         \n    groupSyncThreshold: 2,\n    sequentialOrder: ['left'],         // 仅保留左轨道\n    durationSettings: {           \n        unit: 1,                 \n        baseExtension: 500000,    \n        minDuration: 1000000,     \n        groupRatio: 1.5          \n    }\n};\n\n// 单轨道处理器\nclass AnimationScheduler {\n    constructor() {\n        this.tracks = { left: [] };    // 仅保留左轨道\n        this.timeWindows = [];\n        this.groups = [];\n        this.currentGroup = null;\n    }\n\n    process(imageList, durationList) {\n        imageList.forEach((img, idx) => {\n            this._processImage(img, idx, durationList);\n        });\n        this._postProcess();\n        return this._formatOutput();\n    }\n\n    _processImage(image, index, durations) {\n        const start = this._getStartTime(index, durations);\n        const originalDuration = durations[index] * CONFIG.durationSettings.unit;\n        \n        this._createGroupIfNeeded(index);\n        \n        const { endTime } = this._calculateTiming(start, originalDuration);\n        const animation = this._selectAnimation();\n        const item = this._createItem(image, start, endTime, animation);\n        \n        this._updateState(item, endTime);\n    }\n\n    _createGroupIfNeeded(index) {\n        let shouldCreate = false;\n        \n        // 简化分组逻辑\n        if (CONFIG.mode === ANIMATION_MODES.SEQUENTIAL) {\n            shouldCreate = index % CONFIG.groupSyncThreshold === 0;\n        } else {\n            shouldCreate = index % 2 === 0 || this.groups.length === 0;\n        }\n\n        if (shouldCreate) {\n            this.currentGroup = {\n                items: [],\n                animationType: this._getGroupAnimationType(),\n                endTime: 0\n            };\n            this.groups.push(this.currentGroup);\n        }\n    }\n\n    _getGroupAnimationType() {\n        const preset = ANIMATION_PRESETS[CONFIG.animationPreset];\n        switch(CONFIG.mode) {\n            case ANIMATION_MODES.RANDOM:\n                return { left: this._randomPick(preset.left) };\n            default:\n                return { left: this._randomPick(preset.left) };\n        }\n    }\n\n    _calculateTiming(start, originalDuration) {\n        const baseEnd = start + originalDuration;\n        let endTime = baseEnd + CONFIG.durationSettings.baseExtension;\n        \n        if (this.currentGroup.items.length > 0) {\n            endTime = Math.max(endTime, this.currentGroup.endTime);\n        }\n        \n        endTime = Math.max(\n            endTime,\n            start + CONFIG.durationSettings.minDuration\n        );\n        \n        this.currentGroup.endTime = endTime;\n        return { endTime };\n    }\n\n    _createItem(image, start, end, animation) {\n        return {\n            image_url: image,\n            in_animation: animation,\n            start: start,\n            end: end,\n            width: 1920,\n            height: 1080,\n            track: 'left'  // 固定为左轨道\n        };\n    }\n\n    _selectAnimation() {\n        return this.currentGroup.animationType.left;\n    }\n\n    _updateState(item, groupEnd) {\n        this.tracks.left.push(item);\n        this.currentGroup.items.push(item);\n        this.currentGroup.items.forEach(i => i.end = groupEnd);\n    }\n\n    _postProcess() {\n        this._adjustTrackOverlaps();\n    }\n\n    _adjustTrackOverlaps() {\n        this.tracks.left.sort((a, b) => a.start - b.start);\n        for (let i = 1; i < this.tracks.left.length; i++) {\n            const prev = this.tracks.left[i - 1];\n            const curr = this.tracks.left[i];\n            if (prev.end > curr.start) {\n                const adjust = (prev.end - curr.start) * CONFIG.overlapTolerance;\n                prev.end -= adjust;\n                curr.start = prev.end;\n            }\n        }\n    }\n\n    _getStartTime(index, durations) {\n        return index === 0 ? 0 : durations\n            .slice(0, index)\n            .reduce((sum, dur) => sum + dur * CONFIG.durationSettings.unit, 0);\n    }\n\n    _formatOutput() {\n        return this.tracks.left.map(item => ({\n            image_url: item.image_url,\n            //in_animation: item.in_animation,\n            start: item.start,\n            end: item.end,\n            width: item.width,\n            height: item.height\n        }));\n    }\n\n    _randomPick(arr) {\n        return arr[Math.floor(Math.random() * arr.length)];\n    }\n}\n\nfunction configure(options) {\n    Object.assign(CONFIG, options);\n}\n\nfunction assembleResults(keywords_new, processedSubtitles, textTimelines) {\n    const result = [];\n    \n    for (let i = 0; i < processedSubtitles.length; i++) {\n        const text = processedSubtitles[i];\n        const { start, end } = textTimelines[i];\n        let matchedKeywords = [];\n        \n        // 遍历所有关键词进行匹配检查\n        for (const keyword of keywords_new) {\n            if (text.includes(keyword)) {\n                matchedKeywords.push(keyword);\n            }\n        }\n        \n        // 去重并生成结果对象\n        if (matchedKeywords.length > 0) {\n            const uniqueKeywords = [...new Set(matchedKeywords)];\n            result.push({\n                start,\n                end,\n                text,\n                keyword: uniqueKeywords.join('|'), // 多个关键词用逗号分隔\n                keyword_color: \"#fe8a80\", // #ff7100\n                keyword_font_size: 10,\n                font_size: 7\n            });\n        } else {\n            result.push({\n                start,\n                end,\n                text\n            });\n        }\n    }\n    \n    return result;\n}\n\n/* 使用示例\nconst finalResult = assembleResults(\n    [\"关键词1\", \"关键词2\"],         // keywords_new\n    [\"字幕1\", \"包含关键词2的字幕\"], // processedSubtitles\n    [{start:0,end:100}, {start:101,end:200}] // textTimelines\n);\n*/"
+        language: 5
+        node_inputs:
+            - name: audio_list
+              input:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value:
+                    path: output
+                    ref_node: "169595"
+            - name: duration_list
+              input:
+                type: list
+                items:
+                    type: integer
+                    value: null
+                value:
+                    path: duration_list
+                    ref_node: "169595"
+            - name: image_list
+              input:
+                type: list
+                items:
+                    type: image
+                    value: null
+                value:
+                    path: data_list
+                    ref_node: "180681"
+            - name: list
+              input:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        cap:
+                            type: string
+                            value: null
+                        desc:
+                            type: string
+                            value: null
+                        desc_promopt:
+                            type: string
+                            value: null
+                        story_name:
+                            type: string
+                            value: null
+                    value: null
+                value:
+                    path: list
+                    ref_node: "150774"
+            - name: bg_image
+              input:
+                type: image
+                value:
+                    path: data
+                    ref_node: "180549"
+            - name: book_name
+              input:
+                value:
+                    path: book_name
+                    ref_node: "100001"
+            - name: author_name
+              input:
+                value:
+                    path: auther_name
+                    ref_node: "100001"
+            - name: ip_name
+              input:
+                value:
+                    path: ip_name
+                    ref_node: "100001"
+            - name: mp3_url
+              input:
+                type: string
+                value: "https://codel-agent.oss-cn-shanghai.aliyuncs.com/RW%20%E7%AE%80%E5%8D%95%E7%9A%84%E8%83%8C%E6%99%AF%E9%9F%B3%E4%B9%90%20-%20%E8%AF%BB%E4%B9%A6%E8%83%8C%E6%99%AF%E9%9F%B3%E4%B9%90.mp3"
+            - name: keywords
+              input:
+                value:
+                    path: keywords
+                    ref_node: "173538"
+            - name: first_img
+              input:
+                type: image
+                value:
+                    path: data
+                    ref_node: "684986"
+            - name: zc_mp3_url
+              input:
+                type: string
+                value: "https://codel-agent.oss-cn-shanghai.aliyuncs.com/pd-5b768f485917e84.mp3"
+        node_outputs:
+            author_name:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            author_name_timeline:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        end:
+                            type: integer
+                            value: null
+                        start:
+                            type: integer
+                            value: null
+                    value: null
+                value: null
+            bg_image:
+                type: string
+                value: null
+            bg_mp3:
+                type: string
+                value: null
+            book_name:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            book_name_timelines:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        end:
+                            type: integer
+                            value: null
+                        start:
+                            type: integer
+                            value: null
+                    value: null
+                value: null
+            first_text:
+                type: string
+                value: null
+            first_textTimelines:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        end:
+                            type: integer
+                            value: null
+                        start:
+                            type: integer
+                            value: null
+                    value: null
+                value: null
+            firstImageData:
+                type: string
+                value: null
+            firstProcessedSubtit:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            image_list:
+                type: string
+                value: null
+            imageDataLeft:
+                type: string
+                value: null
+            ip_name:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            ip_name_timelines:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        end:
+                            type: integer
+                            value: null
+                        start:
+                            type: integer
+                            value: null
+                    value: null
+                value: null
+            keywords_new:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            main_text:
+                type: string
+                value: null
+            max_time:
+                type: integer
+                value: null
+            text_cap:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            text_timelines:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        end:
+                            type: integer
+                            value: null
+                        start:
+                            type: integer
+                            value: null
+                    value: null
+                value: null
+            timelines:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        end:
+                            type: integer
+                            value: null
+                        start:
+                            type: integer
+                            value: null
+                    value: null
+                value: null
+            zc_mp3:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 60000
+    - id: "159780"
+      type: plugin
+      title: add_images
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg
+      description: "批量添加图片"
+      position:
+        x: 9795.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7457837925833883688"
+            - name: apiName
+              input:
+                type: string
+                value: "add_images"
+            - name: pluginID
+              input:
+                type: string
+                value: "7457837925833801768"
+            - name: pluginName
+              input:
+                type: string
+                value: "视频合成_剪映小助手"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: x缩放
+              input: {}
+              name: scale_x
+              required: false
+              type: float
+            - description: y缩放
+              input: {}
+              name: scale_y
+              required: false
+              type: float
+            - description: 移动transform_x
+              input: {}
+              name: transform_x
+              required: false
+              type: float
+            - description: 移动transform_y
+              input: {}
+              name: transform_y
+              required: false
+              type: float
+            - description: 草稿地址，使用create_draft输出的draft_url即可
+              input: {}
+              name: draft_url
+              required: true
+              type: string
+            - description: 查看说明：https://krxc4izye0.feishu.cn/wiki/Pgm9wXA4EipKhYkeEQJcLBlJnWb?from=from_copylink
+              input: {}
+              name: image_infos
+              required: true
+              type: string
+        node_inputs:
+            - name: draft_url
+              input:
+                value:
+                    path: draft_url
+                    ref_node: "168118"
+            - name: image_infos
+              input:
+                value:
+                    path: imageDataLeft
+                    ref_node: "152586"
+            - name: scale_x
+              input:
+                type: float
+                value: 0.62
+            - name: scale_y
+              input:
+                type: float
+                value: 0.62
+            - name: transform_x
+              input:
+                type: float
+                value: 0
+            - name: transform_y
+              input:
+                type: float
+                value: -327
+        node_outputs:
+            draft_url:
+                type: string
+                value: null
+            image_ids:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            segment_ids:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            segment_infos:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        end:
+                            type: integer
+                            value: null
+                        id:
+                            type: string
+                            value: null
+                        start:
+                            type: integer
+                            value: null
+                    value: null
+                value: null
+            track_id:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "104782"
+      type: plugin
+      title: save_draft
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg
+      description: "保存草稿\n"
+      position:
+        x: 13015.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7457837955684548642"
+            - name: apiName
+              input:
+                type: string
+                value: "save_draft"
+            - name: pluginID
+              input:
+                type: string
+                value: "7457837925833801768"
+            - name: pluginName
+              input:
+                type: string
+                value: "视频合成_剪映小助手"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: 草稿地址，使用create_draft输出的draft_url即可
+              input: {}
+              name: draft_url
+              required: true
+              type: string
+            - description: 用户ID。如果填写了这个ID，新用户产生的月费就会按照比例归属到这个账号下。
+              input: {}
+              name: user_id
+              required: false
+              type: integer
+        node_inputs:
+            - name: draft_url
+              input:
+                value:
+                    path: draft_url
+                    ref_node: "168118"
+            - name: user_id
+              input:
+                type: integer
+                value: 10299
+        node_outputs:
+            draft_url:
+                type: string
+                value: null
+            message:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "180223"
+      type: plugin
+      title: audio_infos
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg
+      description: "根据时间线制作音频数据"
+      position:
+        x: 6115.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7475829177439158307"
+            - name: apiName
+              input:
+                type: string
+                value: "audio_infos"
+            - name: pluginID
+              input:
+                type: string
+                value: "7475829177439109155"
+            - name: pluginName
+              input:
+                type: string
+                value: "剪映小助手数据生成器"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: 特效音，eg：教堂，默认无
+              input: {}
+              name: audio_effect
+              required: false
+              type: string
+            - description: 音频列表
+              input: {}
+              name: mp3_urls
+              required: true
+              schema:
+                assistType: 0
+                type: string
+              type: list
+            - description: 时间线
+              input: {}
+              name: timelines
+              required: true
+              schema:
+                schema:
+                    - description: 结束时间
+                      input: {}
+                      name: end
+                      required: true
+                      type: integer
+                    - description: 开始时间
+                      input: {}
+                      name: start
+                      required: true
+                      type: integer
+                type: object
+              type: list
+            - description: 音量大小，0-10,默认1
+              input: {}
+              name: volume
+              required: false
+              type: float
+        node_inputs:
+            - name: mp3_urls
+              input:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value:
+                    path: output
+                    ref_node: "169595"
+            - name: timelines
+              input:
+                value:
+                    path: timelines
+                    ref_node: "152586"
+            - name: volume
+              input:
+                type: float
+                value: 2
+        node_outputs:
+            infos:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "158201"
+      type: plugin
+      title: add_captions
+      icon: https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/324427c7589a426286a9774fa69f64a2~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1744464780&x-signature=qS0o%2FY1NDMFTjtJAQ%2FHNSTjQEzw%3D
+      description: "批量添加字幕"
+      position:
+        x: 11635.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7457837925833850920"
+            - name: apiName
+              input:
+                type: string
+                value: "add_captions"
+            - name: pluginID
+              input:
+                type: string
+                value: "7457837925833801768"
+            - name: pluginName
+              input:
+                type: string
+                value: "视频合成_剪映小助手"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: 字幕的对齐方式，0左对齐，1 居中对齐，2右对齐
+              input: {}
+              name: alignment
+              required: false
+              type: integer
+            - description: 边框颜色，eg：#fe8a80
+              input: {}
+              name: border_color
+              required: false
+              type: string
+            - description: 草稿地址，使用create_draft输出的draft_url即可
+              input: {}
+              name: draft_url
+              required: true
+              type: string
+            - description: 字体列表：https://krxc4izye0.feishu.cn/wiki/SmnrwabXriG7JckEzyGcChk4nDd
+              input: {}
+              name: font
+              required: false
+              type: string
+            - description: 字间距，默认0
+              input: {}
+              name: letter_spacing
+              required: false
+              type: float
+            - description: 0 默认。1富文本样式
+              input: {}
+              name: style_text
+              required: false
+              type: integer
+            - description: 文字颜色：#ff1837
+              input: {}
+              name: text_color
+              required: false
+              type: string
+            - description: 查看说明：https://krxc4izye0.feishu.cn/wiki/HhQrw3BFhi1XGOkkJCBcfkqGnwf?from=from_copylink
+              input: {}
+              name: captions
+              required: true
+              type: string
+            - description: 默认：15
+              input: {}
+              name: font_size
+              required: false
+              type: integer
+            - description: 行间距，默认0
+              input: {}
+              name: line_spacing
+              required: false
+              type: float
+            - description: scale_x缩放
+              input: {}
+              name: scale_x
+              required: false
+              type: float
+            - description: scale_y缩放
+              input: {}
+              name: scale_y
+              required: false
+              type: float
+            - description: transform_x位置
+              input: {}
+              name: transform_x
+              required: false
+              type: float
+            - description: transform_y位置
+              input: {}
+              name: transform_y
+              required: false
+              type: float
+        node_inputs:
+            - name: captions
+              input:
+                value:
+                    path: main_text
+                    ref_node: "152586"
+            - name: draft_url
+              input:
+                value:
+                    path: draft_url
+                    ref_node: "168118"
+            - name: alignment
+              input:
+                type: integer
+                value: 1
+            - name: border_color
+              input:
+                type: string
+                value: "#000000"
+            - name: font_size
+              input:
+                type: integer
+                value: 7
+            - name: text_color
+              input:
+                type: string
+                value: "#ffffff"
+            - name: transform_x
+              input:
+                type: float
+                value: 0
+            - name: transform_y
+              input:
+                type: float
+                value: 670
+        node_outputs:
+            draft_url:
+                type: string
+                value: null
+            segment_ids:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            segment_infos:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        end:
+                            type: integer
+                            value: null
+                        id:
+                            type: string
+                            value: null
+                        start:
+                            type: integer
+                            value: null
+                    value: null
+                value: null
+            text_ids:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            track_id:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "180947"
+      type: plugin
+      title: caption_infos
+      icon: https://p9-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/6a57866c6eca488eb6a78e3cdb16e668~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1744465010&x-signature=4iDDzKiufQ2Axl4wsESVJu8bc4A%3D
+      description: "根据时间线制作字幕数据"
+      position:
+        x: 6575.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7475829177439191075"
+            - name: apiName
+              input:
+                type: string
+                value: "caption_infos"
+            - name: pluginID
+              input:
+                type: string
+                value: "7475829177439109155"
+            - name: pluginName
+              input:
+                type: string
+                value: "剪映小助手数据生成器"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: 入场动画时长
+              input: {}
+              name: in_animation_duration
+              required: false
+              type: integer
+            - description: 关键词颜色
+              input: {}
+              name: keyword_color
+              required: false
+              type: string
+            - description: 关键词字大小
+              input: {}
+              name: keyword_font_size
+              required: false
+              type: integer
+            - description: 文本里面的重点词列表
+              input: {}
+              name: keywords
+              required: false
+              schema:
+                assistType: 0
+                type: string
+              type: list
+            - description: 对应剪映的出场动画名字，多个动画请用英文|分割，比如：消散|闭幕
+              input: {}
+              name: out_animation
+              required: false
+              type: string
+            - description: 对应剪映的入场动画名字，多个动画请用英文|分割，比如：飞入|放大
+              input: {}
+              name: in_animation
+              required: false
+              type: string
+            - description: 对应剪映的循环动画名字，多个动画请用英文|分割，比如：扫光|晃动
+              input: {}
+              name: loop_animation
+              required: false
+              type: string
+            - description: 循环动画时长
+              input: {}
+              name: loop_animation_duration
+              required: false
+              type: integer
+            - description: 出场动画时长
+              input: {}
+              name: out_animation_duration
+              required: false
+              type: integer
+            - description: 文本列表
+              input: {}
+              name: texts
+              required: true
+              schema:
+                assistType: 0
+                type: string
+              type: list
+            - description: 时间节点，只接收结构：[{"start":0,"end":4612}]，一般从audio_timeline节点的输出获取
+              input: {}
+              name: timelines
+              required: true
+              schema:
+                schema:
+                    - description: 结束时间
+                      input: {}
+                      name: end
+                      required: true
+                      type: integer
+                    - description: 开始时间
+                      input: {}
+                      name: start
+                      required: true
+                      type: integer
+                type: object
+              type: list
+            - description: 文字大小
+              input: {}
+              name: font_size
+              required: false
+              type: integer
+        node_inputs:
+            - name: texts
+              input:
+                value:
+                    path: text_cap
+                    ref_node: "152586"
+            - name: timelines
+              input:
+                value:
+                    path: text_timelines
+                    ref_node: "152586"
+        node_outputs:
+            infos:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "109941"
+      type: plugin
+      title: add_images_1
+      icon: https://p6-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/324427c7589a426286a9774fa69f64a2~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1744472328&x-signature=9GXsgm2HH29uW0ihgoymUTYxCmc%3D
+      description: "批量添加图片"
+      position:
+        x: 9335.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7457837925833883688"
+            - name: apiName
+              input:
+                type: string
+                value: "add_images"
+            - name: pluginID
+              input:
+                type: string
+                value: "7457837925833801768"
+            - name: pluginName
+              input:
+                type: string
+                value: "视频合成_剪映小助手"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: x缩放
+              input: {}
+              name: scale_x
+              required: false
+              type: float
+            - description: y缩放
+              input: {}
+              name: scale_y
+              required: false
+              type: float
+            - description: 移动transform_x
+              input: {}
+              name: transform_x
+              required: false
+              type: float
+            - description: 移动transform_y
+              input: {}
+              name: transform_y
+              required: false
+              type: float
+            - description: 草稿地址，使用create_draft输出的draft_url即可
+              input: {}
+              name: draft_url
+              required: true
+              type: string
+            - description: 查看说明：https://krxc4izye0.feishu.cn/wiki/Pgm9wXA4EipKhYkeEQJcLBlJnWb?from=from_copylink
+              input: {}
+              name: image_infos
+              required: true
+              type: string
+        node_inputs:
+            - name: draft_url
+              input:
+                value:
+                    path: draft_url
+                    ref_node: "168118"
+            - name: image_infos
+              input:
+                value:
+                    path: bg_image
+                    ref_node: "152586"
+        node_outputs:
+            draft_url:
+                type: string
+                value: null
+            image_ids:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            segment_ids:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            segment_infos:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        end:
+                            type: integer
+                            value: null
+                        id:
+                            type: string
+                            value: null
+                        start:
+                            type: integer
+                            value: null
+                    value: null
+                value: null
+            track_id:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "180549"
+      type: drawing_board
+      title: 背景图
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon_DrawingBoard_v2.jpg
+      description: "自定义画板排版，支持引用添加文本和图片"
+      position:
+        x: 4075.504871544083
+        y: 592.0112986374795
+      parameters:
+        canvasSchema: '{"version":"6.0.0-rc2","width":1440,"height":1080,"backgroundColor":"#ffffffff","customVariableRefs":[{"variableId":"qtz3JL6CEltwoURZNTDNi","objectId":"wubitD4PbOCLGd4Sjggr2","variableName":"title1"},{"variableId":"hx9XgJeLhtCb2BNNDNL3W","objectId":"zKnii6jWElKLVN_b5HbgM","variableName":"title2"},{"variableId":"9PWu6QRfeC27rG6DjUEv9","objectId":"TABcLeJrVImi4NZjDQBlC","variableName":"title3"},{"variableId":"nc5ts9eHh3DtwY60QYLCR","objectId":"DAuKjgr3wObfO0tjVIY3m","variableName":"title4"},{"variableId":"5yCckluv2NLcistW9aQqI","objectId":"Ve2tQZ-wlCjbLAgFIXNfC","variableName":"book_name"},{"variableId":"JV0pi-n0_RhG308CfZI5D","objectId":"UaIzNk2SKTUPtoKfjrLB0","variableName":"year"},{"variableId":"5tHeEfg9DpWIYgTn4r7lL","objectId":"4P4Ao7_u8ixOBXGNrAu4O","variableName":"categroy"},{"variableId":"a8YazcUwptN11bt9bYZbi","objectId":"VuDMnj5kG-Xgp2vAJAyrp","variableName":"author_name"}],"objects":[{"subTargetCheck":false,"interactive":false,"width":1135.114,"height":1470.4886,"backgroundColor":"","padding":0,"customFixedHeight":1470.4885993485345,"customId":"grlSOzFhF_fDjbV4G5GrU","customType":"img","type":"Group","version":"6.0.0-rc2","originX":"left","originY":"top","left":1450.4356,"top":-50.8562,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":90,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"clipPath":{"rx":0,"ry":0,"width":1135.114,"height":1470.4886,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-567.557,"top":-735.2443,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"inverted":false,"absolutePositioned":false},"layoutManager":{"type":"layoutManager","strategy":"fit-content"},"objects":[{"cropX":0,"cropY":0,"width":992,"height":1875,"backgroundColor":"","padding":0,"customFixedType":"full","type":"Image","version":"6.0.0-rc2","originX":"left","originY":"top","left":-568.057,"top":-735.7443,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1.1453,"scaleY":0.7848,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"src":"https://p3-bot-workflow-sign.byteimg.com/tos-cn-i-mdko3gqilj/d6c01d680bdc4078a4703a9cd1c58934.jpg~tplv-mdko3gqilj-image.image?rk3s=81d4c505&x-expires=1805012042&x-signature=OFupjljE9N6%2BOqNFC7erc2U0p%2Fg%3D","crossOrigin":null,"filters":[]},{"rx":0,"ry":0,"width":1135.114,"height":1470.4886,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-567.557,"top":-735.2443,"fill":"#00000000","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0}]},{"subTargetCheck":false,"interactive":false,"width":1470.4886,"height":1088.4231,"backgroundColor":"","padding":0,"customFixedHeight":1088.4231,"customId":"L-2-TZgdD44p9npfId2vn","customType":"img","type":"Group","version":"6.0.0-rc2","originX":"left","originY":"top","left":-20.053,"top":-4.1653,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"clipPath":{"rx":0,"ry":0,"width":1470.4886,"height":1088.4231,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-735.2443,"top":-544.2115,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"inverted":false,"absolutePositioned":false},"layoutManager":{"type":"layoutManager","strategy":"fit-content"},"objects":[{"cropX":0,"cropY":0,"width":1024,"height":1024,"backgroundColor":"","padding":0,"customFixedType":"fill","type":"Image","version":"6.0.0-rc2","originX":"left","originY":"top","left":-735.7443,"top":-735.7443,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1.437,"scaleY":1.437,"angle":0,"flipX":false,"flipY":false,"opacity":0.05,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"src":"https://p26-bot-workflow-sign.byteimg.com/tos-cn-i-mdko3gqilj/a234f1eb36f7406eb46d64db676b05a2.png~tplv-mdko3gqilj-image.image?rk3s=81d4c505&x-expires=1806549572&x-signature=xt%2BNIzMiQgoVYaQ7wMqu906R3f8%3D","crossOrigin":null,"filters":[]},{"rx":0,"ry":0,"width":1470.4886,"height":1088.4231,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-735.2443,"top":-544.2115,"fill":"#00000000","stroke":"#000000fe","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0}]},{"fontSize":40,"fontWeight":"normal","fontFamily":"字语咏楷体","fontStyle":"normal","lineHeight":1.2,"text":"六项精进原则","charSpacing":0,"textAlign":"center","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","minWidth":20,"splitByGrapheme":true,"width":296.6471,"height":57.3883,"editable":true,"backgroundColor":"","padding":10,"customFixedHeight":57.38827573706166,"customId":"wubitD4PbOCLGd4Sjggr2","customType":"block_text","type":"Textbox","version":"6.0.0-rc2","originX":"left","originY":"top","left":16.1868,"top":24.9194,"fill":"#C6C6CDfe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"clipPath":{"rx":0,"ry":0,"width":316.6471,"height":77.3883,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-158.3236,"top":-38.6941,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"inverted":false,"absolutePositioned":false}},{"fontSize":40,"fontWeight":"normal","fontFamily":"字语咏楷体","fontStyle":"normal","lineHeight":1.2,"text":"六项精进原则","charSpacing":0,"textAlign":"center","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","minWidth":20,"splitByGrapheme":true,"width":324.6965,"height":57.3883,"editable":true,"backgroundColor":"","padding":10,"customFixedHeight":57.38827573706166,"customId":"zKnii6jWElKLVN_b5HbgM","customType":"block_text","type":"Textbox","version":"6.0.0-rc2","originX":"left","originY":"top","left":343.2122,"top":24.9194,"fill":"#C6C6CDfe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"clipPath":{"rx":0,"ry":0,"width":344.6965,"height":77.3883,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-172.3483,"top":-38.6941,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"inverted":false,"absolutePositioned":false}},{"fontSize":40,"fontWeight":"normal","fontFamily":"字语咏楷体","fontStyle":"normal","lineHeight":1.2,"text":"六项精进原则","charSpacing":0,"textAlign":"center","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","minWidth":20,"splitByGrapheme":true,"width":365.7723,"height":67.162,"editable":true,"backgroundColor":"","padding":10,"customFixedHeight":67.16203139317025,"customId":"TABcLeJrVImi4NZjDQBlC","customType":"block_text","type":"Textbox","version":"6.0.0-rc2","originX":"left","originY":"top","left":702.534,"top":24.9194,"fill":"#C6C6CDfe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"clipPath":{"rx":0,"ry":0,"width":385.7723,"height":87.162,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-192.8861,"top":-43.581,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"inverted":false,"absolutePositioned":false}},{"fontSize":40,"fontWeight":"normal","fontFamily":"字语咏楷体","fontStyle":"normal","lineHeight":1.2,"text":"六项精进原则","charSpacing":0,"textAlign":"center","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","minWidth":20,"splitByGrapheme":true,"width":319.0429,"height":65.5331,"editable":true,"backgroundColor":"","padding":10,"customFixedHeight":65.53307211715217,"customId":"DAuKjgr3wObfO0tjVIY3m","customType":"block_text","type":"Textbox","version":"6.0.0-rc2","originX":"left","originY":"top","left":1102.9315,"top":24.9194,"fill":"#C6C6CDfe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"clipPath":{"rx":0,"ry":0,"width":339.0429,"height":85.5331,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-169.5214,"top":-42.7665,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"inverted":false,"absolutePositioned":false}},{"rx":0,"ry":0,"width":0,"height":89.1205,"backgroundColor":"","padding":0,"customId":"Vz5xbDTUBYUWQWUoqSswg","customType":"rect","type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":312.8339,"top":15.6352,"fill":"#ccccccff","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":48,"fontWeight":"normal","fontFamily":"字语漫雅手书","fontStyle":"normal","lineHeight":1.2,"text":"|","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":12.96,"height":54.24,"editable":true,"backgroundColor":"","padding":0,"customId":"Je-QeHcZTzz_pgC8MjnTi","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":319.4425,"top":24.9194,"fill":"#70a19c7c","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":48,"fontWeight":"normal","fontFamily":"字语漫雅手书","fontStyle":"normal","lineHeight":1.2,"text":"|","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":12.96,"height":54.24,"editable":true,"backgroundColor":"","padding":0,"customId":"OujV2rL99sVsagjKAXa-A","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":678.7644,"top":24.9194,"fill":"#70a19c7c","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":48,"fontWeight":"normal","fontFamily":"字语漫雅手书","fontStyle":"normal","lineHeight":1.2,"text":"|","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":12.96,"height":54.24,"editable":true,"backgroundColor":"","padding":0,"customId":"yyBfeKwOeJ_w4wxo6Vq7t","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":1079.1619,"top":24.9194,"fill":"#70a19c7c","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"subTargetCheck":false,"interactive":false,"width":159.2094,"height":135.2169,"backgroundColor":"","padding":0,"customFixedHeight":134.58853315719944,"customId":"3Juc7yZi0JXqCJL8vUa3G","customType":"img","type":"Group","version":"6.0.0-rc2","originX":"left","originY":"top","left":20.5821,"top":887.7157,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"clipPath":{"rx":0,"ry":0,"width":159.2094,"height":135.2169,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-79.6047,"top":-67.6085,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"inverted":false,"absolutePositioned":false},"layoutManager":{"type":"layoutManager","strategy":"fit-content"},"objects":[{"cropX":0,"cropY":0,"width":1080,"height":1920,"backgroundColor":"","padding":0,"customFixedType":"fill","type":"Image","version":"6.0.0-rc2","originX":"left","originY":"top","left":-80.1047,"top":-142.4084,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":0.1483,"scaleY":0.1483,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"src":"https://p3-bot-workflow-sign.byteimg.com/tos-cn-i-mdko3gqilj/1548d78537094e74899a53d08b29a455.png~tplv-mdko3gqilj-image.image?rk3s=81d4c505&x-expires=1806549572&x-signature=BX7f9PYZlV8Zl12xtfkdTg1Z5%2FI%3D","crossOrigin":null,"filters":[]},{"rx":0,"ry":0,"width":159.2094,"height":135.2169,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-79.6047,"top":-67.6085,"fill":"#00000000","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0}]},{"fontSize":24,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"每日速读一本书","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":168,"height":27.12,"editable":true,"backgroundColor":"","padding":0,"customId":"_GCMNyqRtXXuDfcHkg2wn","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":16.1868,"top":1012.6696,"fill":"#7B6435fe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":32,"fontWeight":"normal","fontFamily":"字语墨黑体","fontStyle":"normal","lineHeight":1.2,"text":"《贫穷的本质》","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":224,"height":36.16,"editable":true,"backgroundColor":"","padding":0,"customId":"Ve2tQZ-wlCjbLAgFIXNfC","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":16.9774,"top":698.5217,"fill":"#fe8a80fe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":24,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":2,"height":27.12,"editable":true,"backgroundColor":"","padding":0,"customId":"WiT5Vok4zZPH3j5AuhlOC","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":43.9819,"top":163.3637,"fill":"#000000ff","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":24,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"2013-04","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":88.248,"height":27.12,"editable":true,"backgroundColor":"","padding":0,"customId":"UaIzNk2SKTUPtoKfjrLB0","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":100.1868,"top":797.6387,"fill":"#4a4238fe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":24,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"作者：","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":72,"height":27.12,"editable":true,"backgroundColor":"","padding":0,"customId":"eLnR31f8Jgn5Ez420IMSj","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":24.9774,"top":752.6002,"fill":"#4a4238fe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":24,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"年份：","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":72,"height":27.12,"editable":true,"backgroundColor":"","padding":0,"customId":"wUCunpbXuQvP2YYEtaWbF","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":24.9774,"top":797.6387,"fill":"#4a4238fe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":24,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"分类：","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":72,"height":27.12,"editable":true,"backgroundColor":"","padding":0,"customId":"WGcIatUVKKeKjznwjim3h","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":24.9774,"top":842.6772,"fill":"#4a4238fe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":24,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"认知成长","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":96,"height":27.12,"editable":true,"backgroundColor":"","padding":0,"customId":"4P4Ao7_u8ixOBXGNrAu4O","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":96.9774,"top":842.6772,"fill":"#4a4238fe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":24,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"阿比吉特/埃斯特","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":177.408,"height":27.12,"editable":true,"backgroundColor":"","padding":0,"customId":"VuDMnj5kG-Xgp2vAJAyrp","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":96.9774,"top":752.6002,"fill":"#4a4238fe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0}],"background":"#ffffffff"}'
+        node_inputs:
+            - name: title1
+              input:
+                type: string
+                value:
+                    path: title1
+                    ref_node: "115560"
+            - name: title2
+              input:
+                type: string
+                value:
+                    path: title2
+                    ref_node: "115560"
+            - name: title3
+              input:
+                type: string
+                value:
+                    path: title3
+                    ref_node: "115560"
+            - name: title4
+              input:
+                type: string
+                value:
+                    path: title4
+                    ref_node: "115560"
+            - name: author_name
+              input:
+                value:
+                    path: auther_name
+                    ref_node: "100001"
+            - name: book_name
+              input:
+                value:
+                    path: book_name
+                    ref_node: "100001"
+            - name: year
+              input:
+                type: string
+                value:
+                    path: year
+                    ref_node: "132962"
+            - name: categroy
+              input:
+                type: string
+                value:
+                    path: category
+                    ref_node: "132962"
+        node_outputs:
+            data:
+                type: image
+                value: null
+            msg:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 60000
+    - id: "115560"
+      type: llm
+      title: 上标题总结
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 1144.6127323058217
+        y: 574.1809851799529
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: apiMode
+              input:
+                type: integer
+                value: "0"
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: thinkingType
+              input:
+                type: string
+                value: enabled
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                    reasoning_effort:
+                        type: string
+                        value: medium
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: "# 角色\n你是一位专业的3分钟读书视频工作流助手，擅长依据给定内容，精准剖析其逻辑结构与主题走向，将文案清晰划分为四个板块，并以六个字以内精炼概括每个板块的核心内容，以此构建完整的内容框架进度条，助力用户直观把握内容进度。\n\n## 技能\n### 技能 1: 精准划分内容板块\n1. 当用户提供{{content}}内容后，深入分析该内容的逻辑结构与主题发展方向。\n2. 将内容合理、顺畅地划分为四个板块。\n\n### 技能 2: 精炼概括板块内容\n1. 针对划分好的每个板块，准确提炼核心要点。\n2. 用简洁明了的六个字以内概括每个板块的主要内容。\n\n### 技能 3: 规范生成进度条\n1. 根据概括出的四个板块内容，制作出清晰、完整的内容框架进度条，使用户能迅速看清内容进度。\n\n## 限制:\n- 仅围绕用户提供的内容进行板块划分、概括及进度条生成，不处理其他不相关话题。\n- 输出内容必须严格遵循上述要求，不得偏离。\n- 每个板块的六字以内概括需准确反映板块核心内容。 "
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: content
+              input:
+                type: string
+                value:
+                    path: content
+                    ref_node: "132962"
+        node_outputs:
+            reasoning_content:
+                type: string
+                value: null
+            title1:
+                type: string
+                value: null
+            title2:
+                type: string
+                value: null
+            title3:
+                type: string
+                value: null
+            title4:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 600000
+    - id: "193529"
+      type: plugin
+      title: caption_infos_book_name
+      icon: https://p6-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/6a3507dfdb5c4dc49bd72ec0e17a7752~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1745669496&x-signature=uemfLE8rsVW2SDsOYRkgI%2F4K67M%3D
+      description: "根据时间线制作字幕数据"
+      position:
+        x: 7035.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7475829177439191075"
+            - name: apiName
+              input:
+                type: string
+                value: "caption_infos"
+            - name: pluginID
+              input:
+                type: string
+                value: "7475829177439109155"
+            - name: pluginName
+              input:
+                type: string
+                value: "剪映小助手数据生成器"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: 入场动画时长
+              input: {}
+              name: in_animation_duration
+              required: false
+              type: integer
+            - description: 关键词颜色
+              input: {}
+              name: keyword_color
+              required: false
+              type: string
+            - description: 关键词字大小
+              input: {}
+              name: keyword_font_size
+              required: false
+              type: integer
+            - description: 文本里面的重点词列表
+              input: {}
+              name: keywords
+              required: false
+              schema:
+                assistType: 0
+                type: string
+              type: list
+            - description: 对应剪映的出场动画名字，多个动画请用英文|分割，比如：消散|闭幕
+              input: {}
+              name: out_animation
+              required: false
+              type: string
+            - description: 对应剪映的入场动画名字，多个动画请用英文|分割，比如：飞入|放大
+              input: {}
+              name: in_animation
+              required: false
+              type: string
+            - description: 对应剪映的循环动画名字，多个动画请用英文|分割，比如：扫光|晃动
+              input: {}
+              name: loop_animation
+              required: false
+              type: string
+            - description: 循环动画时长
+              input: {}
+              name: loop_animation_duration
+              required: false
+              type: integer
+            - description: 出场动画时长
+              input: {}
+              name: out_animation_duration
+              required: false
+              type: integer
+            - description: 文本列表
+              input: {}
+              name: texts
+              required: true
+              schema:
+                assistType: 0
+                type: string
+              type: list
+            - description: 时间节点，只接收结构：[{"start":0,"end":4612}]，一般从audio_timeline节点的输出获取
+              input: {}
+              name: timelines
+              required: true
+              schema:
+                schema:
+                    - description: 结束时间
+                      input: {}
+                      name: end
+                      required: true
+                      type: integer
+                    - description: 开始时间
+                      input: {}
+                      name: start
+                      required: true
+                      type: integer
+                type: object
+              type: list
+            - description: 文字大小
+              input: {}
+              name: font_size
+              required: false
+              type: integer
+        node_inputs:
+            - name: texts
+              input:
+                value:
+                    path: book_name
+                    ref_node: "152586"
+            - name: timelines
+              input:
+                value:
+                    path: book_name_timelines
+                    ref_node: "152586"
+        node_outputs:
+            infos:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "416740"
+      type: plugin
+      title: caption_infos_author_name_1
+      icon: https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/6a3507dfdb5c4dc49bd72ec0e17a7752~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1745669760&x-signature=6SeAed3n78RJu4jWllRhYIcBV50%3D
+      description: "根据时间线制作字幕数据"
+      position:
+        x: 7495.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7475829177439191075"
+            - name: apiName
+              input:
+                type: string
+                value: "caption_infos"
+            - name: pluginID
+              input:
+                type: string
+                value: "7475829177439109155"
+            - name: pluginName
+              input:
+                type: string
+                value: "剪映小助手数据生成器"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: 入场动画时长
+              input: {}
+              name: in_animation_duration
+              required: false
+              type: integer
+            - description: 关键词颜色
+              input: {}
+              name: keyword_color
+              required: false
+              type: string
+            - description: 关键词字大小
+              input: {}
+              name: keyword_font_size
+              required: false
+              type: integer
+            - description: 文本里面的重点词列表
+              input: {}
+              name: keywords
+              required: false
+              schema:
+                assistType: 0
+                type: string
+              type: list
+            - description: 对应剪映的出场动画名字，多个动画请用英文|分割，比如：消散|闭幕
+              input: {}
+              name: out_animation
+              required: false
+              type: string
+            - description: 对应剪映的入场动画名字，多个动画请用英文|分割，比如：飞入|放大
+              input: {}
+              name: in_animation
+              required: false
+              type: string
+            - description: 对应剪映的循环动画名字，多个动画请用英文|分割，比如：扫光|晃动
+              input: {}
+              name: loop_animation
+              required: false
+              type: string
+            - description: 循环动画时长
+              input: {}
+              name: loop_animation_duration
+              required: false
+              type: integer
+            - description: 出场动画时长
+              input: {}
+              name: out_animation_duration
+              required: false
+              type: integer
+            - description: 文本列表
+              input: {}
+              name: texts
+              required: true
+              schema:
+                assistType: 0
+                type: string
+              type: list
+            - description: 时间节点，只接收结构：[{"start":0,"end":4612}]，一般从audio_timeline节点的输出获取
+              input: {}
+              name: timelines
+              required: true
+              schema:
+                schema:
+                    - description: 结束时间
+                      input: {}
+                      name: end
+                      required: true
+                      type: integer
+                    - description: 开始时间
+                      input: {}
+                      name: start
+                      required: true
+                      type: integer
+                type: object
+              type: list
+            - description: 文字大小
+              input: {}
+              name: font_size
+              required: false
+              type: integer
+        node_inputs:
+            - name: texts
+              input:
+                value:
+                    path: author_name
+                    ref_node: "152586"
+            - name: timelines
+              input:
+                value:
+                    path: author_name_timeline
+                    ref_node: "152586"
+        node_outputs:
+            infos:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "148271"
+      type: plugin
+      title: caption_infos_ip_name
+      icon: https://p9-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/6a3507dfdb5c4dc49bd72ec0e17a7752~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1745669769&x-signature=i70FfR1%2FrjfeNmn8mYaUEirxT5Y%3D
+      description: "根据时间线制作字幕数据"
+      position:
+        x: 7955.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7475829177439191075"
+            - name: apiName
+              input:
+                type: string
+                value: "caption_infos"
+            - name: pluginID
+              input:
+                type: string
+                value: "7475829177439109155"
+            - name: pluginName
+              input:
+                type: string
+                value: "剪映小助手数据生成器"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: 入场动画时长
+              input: {}
+              name: in_animation_duration
+              required: false
+              type: integer
+            - description: 关键词颜色
+              input: {}
+              name: keyword_color
+              required: false
+              type: string
+            - description: 关键词字大小
+              input: {}
+              name: keyword_font_size
+              required: false
+              type: integer
+            - description: 文本里面的重点词列表
+              input: {}
+              name: keywords
+              required: false
+              schema:
+                assistType: 0
+                type: string
+              type: list
+            - description: 对应剪映的出场动画名字，多个动画请用英文|分割，比如：消散|闭幕
+              input: {}
+              name: out_animation
+              required: false
+              type: string
+            - description: 对应剪映的入场动画名字，多个动画请用英文|分割，比如：飞入|放大
+              input: {}
+              name: in_animation
+              required: false
+              type: string
+            - description: 对应剪映的循环动画名字，多个动画请用英文|分割，比如：扫光|晃动
+              input: {}
+              name: loop_animation
+              required: false
+              type: string
+            - description: 循环动画时长
+              input: {}
+              name: loop_animation_duration
+              required: false
+              type: integer
+            - description: 出场动画时长
+              input: {}
+              name: out_animation_duration
+              required: false
+              type: integer
+            - description: 文本列表
+              input: {}
+              name: texts
+              required: true
+              schema:
+                assistType: 0
+                type: string
+              type: list
+            - description: 时间节点，只接收结构：[{"start":0,"end":4612}]，一般从audio_timeline节点的输出获取
+              input: {}
+              name: timelines
+              required: true
+              schema:
+                schema:
+                    - description: 结束时间
+                      input: {}
+                      name: end
+                      required: true
+                      type: integer
+                    - description: 开始时间
+                      input: {}
+                      name: start
+                      required: true
+                      type: integer
+                type: object
+              type: list
+            - description: 文字大小
+              input: {}
+              name: font_size
+              required: false
+              type: integer
+        node_inputs:
+            - name: texts
+              input:
+                value:
+                    path: ip_name
+                    ref_node: "152586"
+            - name: timelines
+              input:
+                value:
+                    path: ip_name_timelines
+                    ref_node: "152586"
+        node_outputs:
+            infos:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "151142"
+      type: plugin
+      title: add_captions_3
+      icon: https://p3-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/f013e4af74224258a37363a531aecefe~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1745670744&x-signature=UvU%2BH20O2cMcgYPUy3oUiVVU69Q%3D
+      description: "批量添加字幕"
+      position:
+        x: 11175.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7457837925833850920"
+            - name: apiName
+              input:
+                type: string
+                value: "add_captions"
+            - name: pluginID
+              input:
+                type: string
+                value: "7457837925833801768"
+            - name: pluginName
+              input:
+                type: string
+                value: "视频合成_剪映小助手"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: 字幕的对齐方式，0左对齐，1 居中对齐，2右对齐
+              input: {}
+              name: alignment
+              required: false
+              type: integer
+            - description: 边框颜色，eg：#fe8a80
+              input: {}
+              name: border_color
+              required: false
+              type: string
+            - description: 草稿地址，使用create_draft输出的draft_url即可
+              input: {}
+              name: draft_url
+              required: true
+              type: string
+            - description: 字体列表：https://krxc4izye0.feishu.cn/wiki/SmnrwabXriG7JckEzyGcChk4nDd
+              input: {}
+              name: font
+              required: false
+              type: string
+            - description: 字间距，默认0
+              input: {}
+              name: letter_spacing
+              required: false
+              type: float
+            - description: 0 默认。1富文本样式
+              input: {}
+              name: style_text
+              required: false
+              type: integer
+            - description: 文字颜色：#ff1837
+              input: {}
+              name: text_color
+              required: false
+              type: string
+            - description: 查看说明：https://krxc4izye0.feishu.cn/wiki/HhQrw3BFhi1XGOkkJCBcfkqGnwf?from=from_copylink
+              input: {}
+              name: captions
+              required: true
+              type: string
+            - description: 默认：15
+              input: {}
+              name: font_size
+              required: false
+              type: integer
+            - description: 行间距，默认0
+              input: {}
+              name: line_spacing
+              required: false
+              type: float
+            - description: scale_x缩放
+              input: {}
+              name: scale_x
+              required: false
+              type: float
+            - description: scale_y缩放
+              input: {}
+              name: scale_y
+              required: false
+              type: float
+            - description: transform_x位置
+              input: {}
+              name: transform_x
+              required: false
+              type: float
+            - description: transform_y位置
+              input: {}
+              name: transform_y
+              required: false
+              type: float
+        node_inputs:
+            - name: captions
+              input:
+                value:
+                    path: infos
+                    ref_node: "148271"
+            - name: draft_url
+              input:
+                value:
+                    path: draft_url
+                    ref_node: "168118"
+            - name: font_size
+              input:
+                type: integer
+                value: 5
+            - name: text_color
+              input:
+                type: string
+                value: "#b3a6a1"
+            - name: transform_x
+              input:
+                type: float
+                value: 582
+            - name: transform_y
+              input:
+                type: float
+                value: -452
+        node_outputs:
+            draft_url:
+                type: string
+                value: null
+            segment_ids:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            segment_infos:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        end:
+                            type: integer
+                            value: null
+                        id:
+                            type: string
+                            value: null
+                        start:
+                            type: integer
+                            value: null
+                    value: null
+                value: null
+            text_ids:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            track_id:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "157087"
+      type: plugin
+      title: add_audios_1
+      icon: https://p9-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/f013e4af74224258a37363a531aecefe~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1745675823&x-signature=CF0gxJyJ5eQu5HPEV8HKkVN2s%2Fk%3D
+      description: "批量添加音频"
+      position:
+        x: 12095.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7457837925833834536"
+            - name: apiName
+              input:
+                type: string
+                value: "add_audios"
+            - name: pluginID
+              input:
+                type: string
+                value: "7457837925833801768"
+            - name: pluginName
+              input:
+                type: string
+                value: "视频合成_剪映小助手"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: '[{"audio_url": "http://example.com/audio1.mp3","duration":120,"start":0,"end":12000000,"audio_effect":"教堂"}]'
+              input: {}
+              name: audio_infos
+              required: true
+              type: string
+            - description: 草稿地址，使用create_draft输出的draft_url即可
+              input: {}
+              name: draft_url
+              required: true
+              type: string
+        node_inputs:
+            - name: audio_infos
+              input:
+                value:
+                    path: bg_mp3
+                    ref_node: "152586"
+            - name: draft_url
+              input:
+                value:
+                    path: draft_url
+                    ref_node: "168118"
+        node_outputs:
+            audio_ids:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            draft_url:
+                type: string
+                value: null
+            track_id:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "684986"
+      type: drawing_board
+      title: 开场封面图
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon_DrawingBoard_v2.jpg
+      description: "自定义画板排版，支持引用添加文本和图片"
+      position:
+        x: 3615.504871544083
+        y: 592.0112986374795
+      parameters:
+        canvasSchema: '{"version":"6.0.0-rc2","width":1440,"height":1080,"backgroundColor":"#ffffffff","customVariableRefs":[{"variableId":"qtz3JL6CEltwoURZNTDNi","objectId":"wubitD4PbOCLGd4Sjggr2","variableName":"title1"},{"variableId":"hx9XgJeLhtCb2BNNDNL3W","objectId":"zKnii6jWElKLVN_b5HbgM","variableName":"title2"},{"variableId":"9PWu6QRfeC27rG6DjUEv9","objectId":"TABcLeJrVImi4NZjDQBlC","variableName":"title3"},{"variableId":"nc5ts9eHh3DtwY60QYLCR","objectId":"DAuKjgr3wObfO0tjVIY3m","variableName":"title4"},{"variableId":"5yCckluv2NLcistW9aQqI","objectId":"Ve2tQZ-wlCjbLAgFIXNfC","variableName":"book_name"},{"variableId":"JV0pi-n0_RhG308CfZI5D","objectId":"UaIzNk2SKTUPtoKfjrLB0","variableName":"year"},{"variableId":"5tHeEfg9DpWIYgTn4r7lL","objectId":"4P4Ao7_u8ixOBXGNrAu4O","variableName":"categroy"},{"variableId":"a8YazcUwptN11bt9bYZbi","objectId":"VuDMnj5kG-Xgp2vAJAyrp","variableName":"author_name"}],"objects":[{"subTargetCheck":false,"interactive":false,"width":1135.114,"height":1470.4886,"backgroundColor":"","padding":0,"customFixedHeight":1470.4885993485345,"customId":"grlSOzFhF_fDjbV4G5GrU","customType":"img","type":"Group","version":"6.0.0-rc2","originX":"left","originY":"top","left":1450.4356,"top":-50.8562,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":90,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"clipPath":{"rx":0,"ry":0,"width":1135.114,"height":1470.4886,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-567.557,"top":-735.2443,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"inverted":false,"absolutePositioned":false},"layoutManager":{"type":"layoutManager","strategy":"fit-content"},"objects":[{"cropX":0,"cropY":0,"width":992,"height":1875,"backgroundColor":"","padding":0,"customFixedType":"full","type":"Image","version":"6.0.0-rc2","originX":"left","originY":"top","left":-568.057,"top":-735.7443,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1.1453,"scaleY":0.7848,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"src":"https://p26-bot-workflow-sign.byteimg.com/tos-cn-i-mdko3gqilj/d6c01d680bdc4078a4703a9cd1c58934.jpg~tplv-mdko3gqilj-image.image?rk3s=81d4c505&x-expires=1805011042&x-signature=oRBjo4b6v8gB8pT0lj5FGRVPptQ%3D","crossOrigin":null,"filters":[]},{"rx":0,"ry":0,"width":1135.114,"height":1470.4886,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-567.557,"top":-735.2443,"fill":"#00000000","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0}]},{"subTargetCheck":false,"interactive":false,"width":1470.4886,"height":1088.4231,"backgroundColor":"","padding":0,"customFixedHeight":1088.4231,"customId":"L-2-TZgdD44p9npfId2vn","customType":"img","type":"Group","version":"6.0.0-rc2","originX":"left","originY":"top","left":-20.053,"top":-4.1653,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"clipPath":{"rx":0,"ry":0,"width":1470.4886,"height":1088.4231,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-735.2443,"top":-544.2115,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"inverted":false,"absolutePositioned":false},"layoutManager":{"type":"layoutManager","strategy":"fit-content"},"objects":[{"cropX":0,"cropY":0,"width":1024,"height":1024,"backgroundColor":"","padding":0,"customFixedType":"fill","type":"Image","version":"6.0.0-rc2","originX":"left","originY":"top","left":-735.7443,"top":-735.7443,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1.437,"scaleY":1.437,"angle":0,"flipX":false,"flipY":false,"opacity":0.05,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"src":"https://p3-bot-workflow-sign.byteimg.com/tos-cn-i-mdko3gqilj/57d7c2c0d60d40e0b43ab36ef05907a7.png~tplv-mdko3gqilj-image.image?rk3s=81d4c505&x-expires=1806548838&x-signature=xP%2Bjg5xxYv2%2FZuqWpOkt9Z470DE%3D","crossOrigin":null,"filters":[]},{"rx":0,"ry":0,"width":1470.4886,"height":1088.4231,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-735.2443,"top":-544.2115,"fill":"#00000000","stroke":"#000000fe","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0}]},{"fontSize":40,"fontWeight":"normal","fontFamily":"字语咏楷体","fontStyle":"normal","lineHeight":1.2,"text":"六项精进原则","charSpacing":0,"textAlign":"center","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","minWidth":20,"splitByGrapheme":true,"width":296.6471,"height":57.3883,"editable":true,"backgroundColor":"","padding":10,"customFixedHeight":57.38827573706166,"customId":"wubitD4PbOCLGd4Sjggr2","customType":"block_text","type":"Textbox","version":"6.0.0-rc2","originX":"left","originY":"top","left":16.1868,"top":24.9194,"fill":"#C6C6CDfe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"clipPath":{"rx":0,"ry":0,"width":316.6471,"height":77.3883,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-158.3236,"top":-38.6941,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"inverted":false,"absolutePositioned":false}},{"fontSize":40,"fontWeight":"normal","fontFamily":"字语咏楷体","fontStyle":"normal","lineHeight":1.2,"text":"六项精进原则","charSpacing":0,"textAlign":"center","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","minWidth":20,"splitByGrapheme":true,"width":324.6965,"height":57.3883,"editable":true,"backgroundColor":"","padding":10,"customFixedHeight":57.38827573706166,"customId":"zKnii6jWElKLVN_b5HbgM","customType":"block_text","type":"Textbox","version":"6.0.0-rc2","originX":"left","originY":"top","left":343.2122,"top":24.9194,"fill":"#C6C6CDfe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"clipPath":{"rx":0,"ry":0,"width":344.6965,"height":77.3883,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-172.3483,"top":-38.6941,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"inverted":false,"absolutePositioned":false}},{"fontSize":40,"fontWeight":"normal","fontFamily":"字语咏楷体","fontStyle":"normal","lineHeight":1.2,"text":"六项精进原则","charSpacing":0,"textAlign":"center","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","minWidth":20,"splitByGrapheme":true,"width":365.7723,"height":67.162,"editable":true,"backgroundColor":"","padding":10,"customFixedHeight":67.16203139317025,"customId":"TABcLeJrVImi4NZjDQBlC","customType":"block_text","type":"Textbox","version":"6.0.0-rc2","originX":"left","originY":"top","left":702.534,"top":24.9194,"fill":"#C6C6CDfe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"clipPath":{"rx":0,"ry":0,"width":385.7723,"height":87.162,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-192.8861,"top":-43.581,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"inverted":false,"absolutePositioned":false}},{"fontSize":40,"fontWeight":"normal","fontFamily":"字语咏楷体","fontStyle":"normal","lineHeight":1.2,"text":"六项精进原则","charSpacing":0,"textAlign":"center","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","minWidth":20,"splitByGrapheme":true,"width":319.0429,"height":65.5331,"editable":true,"backgroundColor":"","padding":10,"customFixedHeight":65.53307211715217,"customId":"DAuKjgr3wObfO0tjVIY3m","customType":"block_text","type":"Textbox","version":"6.0.0-rc2","originX":"left","originY":"top","left":1102.9315,"top":24.9194,"fill":"#C6C6CDfe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"clipPath":{"rx":0,"ry":0,"width":339.0429,"height":85.5331,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-169.5214,"top":-42.7665,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"inverted":false,"absolutePositioned":false}},{"rx":0,"ry":0,"width":0,"height":89.1205,"backgroundColor":"","padding":0,"customId":"Vz5xbDTUBYUWQWUoqSswg","customType":"rect","type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":312.8339,"top":15.6352,"fill":"#ccccccff","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":48,"fontWeight":"normal","fontFamily":"字语漫雅手书","fontStyle":"normal","lineHeight":1.2,"text":"|","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":12.96,"height":54.24,"editable":true,"backgroundColor":"","padding":0,"customId":"Je-QeHcZTzz_pgC8MjnTi","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":319.4425,"top":24.9194,"fill":"#70a19c7c","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":48,"fontWeight":"normal","fontFamily":"字语漫雅手书","fontStyle":"normal","lineHeight":1.2,"text":"|","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":12.96,"height":54.24,"editable":true,"backgroundColor":"","padding":0,"customId":"OujV2rL99sVsagjKAXa-A","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":678.7644,"top":24.9194,"fill":"#70a19c7c","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":48,"fontWeight":"normal","fontFamily":"字语漫雅手书","fontStyle":"normal","lineHeight":1.2,"text":"|","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":12.96,"height":54.24,"editable":true,"backgroundColor":"","padding":0,"customId":"yyBfeKwOeJ_w4wxo6Vq7t","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":1079.1619,"top":24.9194,"fill":"#70a19c7c","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"subTargetCheck":false,"interactive":false,"width":521.2122,"height":346.3602,"backgroundColor":"","padding":0,"customFixedHeight":355.97117146631433,"customId":"3Juc7yZi0JXqCJL8vUa3G","customType":"img","type":"Group","version":"6.0.0-rc2","originX":"left","originY":"top","left":-20.053,"top":297.5174,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"clipPath":{"rx":0,"ry":0,"width":521.2122,"height":346.3602,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-260.6061,"top":-173.1801,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"inverted":false,"absolutePositioned":false},"layoutManager":{"type":"layoutManager","strategy":"fit-content"},"objects":[{"cropX":0,"cropY":0,"width":1080,"height":1920,"backgroundColor":"","padding":0,"customFixedType":"fill","type":"Image","version":"6.0.0-rc2","originX":"left","originY":"top","left":-261.1061,"top":-464.1886,"fill":"rgb(0,0,0)","stroke":null,"strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":0.4835,"scaleY":0.4835,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0,"src":"https://p3-bot-workflow-sign.byteimg.com/tos-cn-i-mdko3gqilj/1021387b76ef48059e545ca1c7cdbdbc.png~tplv-mdko3gqilj-image.image?rk3s=81d4c505&x-expires=1806548839&x-signature=W35AAnXoSnPXqNI%2F7Ri7NIcIETQ%3D","crossOrigin":null,"filters":[]},{"rx":0,"ry":0,"width":521.2122,"height":346.3602,"backgroundColor":"","padding":0,"type":"Rect","version":"6.0.0-rc2","originX":"left","originY":"top","left":-260.6061,"top":-173.1801,"fill":"#00000000","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0}]},{"fontSize":32,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"每日速读一本书","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":224,"height":36.16,"editable":true,"backgroundColor":"","padding":0,"customId":"_GCMNyqRtXXuDfcHkg2wn","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":92.5104,"top":664.7178,"fill":"#00B2B2fe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":120,"fontWeight":"normal","fontFamily":"字语墨黑体","fontStyle":"normal","lineHeight":1.2,"text":"《贫穷的本质》","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":840,"height":135.6,"editable":true,"backgroundColor":"","padding":0,"customId":"Ve2tQZ-wlCjbLAgFIXNfC","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":60.9774,"top":163.3637,"fill":"#FF441Efe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":24,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":2,"height":27.12,"editable":true,"backgroundColor":"","padding":0,"customId":"WiT5Vok4zZPH3j5AuhlOC","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":43.9819,"top":163.3637,"fill":"#000000ff","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":32,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"2013-04","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":117.664,"height":36.16,"editable":true,"backgroundColor":"","padding":0,"customId":"UaIzNk2SKTUPtoKfjrLB0","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":596.0945,"top":434.5375,"fill":"#70a19cfe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":24,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"作者：","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":72,"height":27.12,"editable":true,"backgroundColor":"","padding":0,"customId":"eLnR31f8Jgn5Ez420IMSj","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":505.5604,"top":368.0776,"fill":"#4a4238fe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":24,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"年份：","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":72,"height":27.12,"editable":true,"backgroundColor":"","padding":0,"customId":"wUCunpbXuQvP2YYEtaWbF","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":505.5604,"top":434.5375,"fill":"#4a4238fe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":24,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"分类：","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":72,"height":27.12,"editable":true,"backgroundColor":"","padding":0,"customId":"WGcIatUVKKeKjznwjim3h","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":505.5604,"top":500.9974,"fill":"#4a4238fe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":32,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"认知成长","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":128,"height":36.16,"editable":true,"backgroundColor":"","padding":0,"customId":"4P4Ao7_u8ixOBXGNrAu4O","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":596.0945,"top":500.9974,"fill":"#70a19cfe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0},{"fontSize":32,"fontWeight":"normal","fontFamily":"常规体-思源黑体","fontStyle":"normal","lineHeight":1.2,"text":"阿比吉特/埃斯特","charSpacing":0,"textAlign":"left","styles":[],"pathStartOffset":0,"pathSide":"left","pathAlign":"baseline","underline":false,"overline":false,"linethrough":false,"textBackgroundColor":"","direction":"ltr","width":236.544,"height":36.16,"editable":true,"backgroundColor":"","padding":0,"customId":"VuDMnj5kG-Xgp2vAJAyrp","customType":"inline_text","type":"IText","version":"6.0.0-rc2","originX":"left","originY":"top","left":596.0945,"top":368.0776,"fill":"#70a19cfe","stroke":"#000000ff","strokeWidth":0,"strokeDashArray":null,"strokeLineCap":"butt","strokeDashOffset":0,"strokeLineJoin":"miter","strokeUniform":false,"strokeMiterLimit":4,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"fillRule":"nonzero","paintFirst":"fill","globalCompositeOperation":"source-over","skewX":0,"skewY":0}],"background":"#ffffffff"}'
+        node_inputs:
+            - name: title1
+              input:
+                value:
+                    path: title1
+                    ref_node: "115560"
+            - name: title2
+              input:
+                value:
+                    path: title2
+                    ref_node: "115560"
+            - name: title3
+              input:
+                value:
+                    path: title3
+                    ref_node: "115560"
+            - name: title4
+              input:
+                value:
+                    path: title4
+                    ref_node: "115560"
+            - name: author_name
+              input:
+                value:
+                    path: auther_name
+                    ref_node: "100001"
+            - name: book_name
+              input:
+                value:
+                    path: book_name
+                    ref_node: "100001"
+            - name: year
+              input:
+                type: string
+                value:
+                    path: year
+                    ref_node: "132962"
+            - name: categroy
+              input:
+                type: string
+                value:
+                    path: category
+                    ref_node: "132962"
+        node_outputs:
+            data:
+                type: image
+                value: null
+            msg:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 60000
+    - id: "150774"
+      type: code
+      title: 代码_2
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg
+      description: "编写代码，处理输入变量来生成返回值"
+      version: v2
+      position:
+        x: 2035.504871544083
+        y: 592.0112986374795
+      parameters:
+        code: "// 在这里，您可以通过 ‘params’  获取节点中的输入变量，并通过 'ret' 输出结果\n// 'params' 和 'ret' 已经被正确地注入到环境中\n// 下面是一个示例，获取节点输入中参数名为‘input’的值：\n// const input = params.input; \n// 下面是一个示例，输出一个包含多种数据类型的 'ret' 对象：\n// const ret = { \"name\": ‘小明’, \"hobbies\": [“看书”, “旅游”] };\n\nasync function main({ params }: Args): Promise<Output> {\n    const data = params.c_list;\n    const book_name = params.book_name;\n\n    data.unshift({\n        story_name: \"引言\",\n        desc: \"每日精读一本书\",\n        cap: \"3分钟精读一本书，今天我们读\" + book_name,\n        desc_promopt: \"每日精读一本书\"\n    });\n\n    // 构建输出对象\n    const ret = {\n        list:data\n    };\n\n    return ret;\n}"
+        language: 5
+        node_inputs:
+            - name: c_list
+              input:
+                value:
+                    path: list
+                    ref_node: "173538"
+            - name: book_name
+              input:
+                value:
+                    path: book_name
+                    ref_node: "100001"
+            - name: author_name
+              input:
+                value:
+                    path: auther_name
+                    ref_node: "100001"
+        node_outputs:
+            list:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        cap:
+                            type: string
+                            value: null
+                        desc:
+                            type: string
+                            value: null
+                        desc_promopt:
+                            type: string
+                            value: null
+                        story_name:
+                            type: string
+                            value: null
+                    value: null
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 60000
+    - id: "146807"
+      type: plugin
+      title: add_audios_2
+      icon: https://p9-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/f013e4af74224258a37363a531aecefe~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1745749195&x-signature=i4XyV4NBSa9taUxrJC18GxUdHqM%3D
+      description: "批量添加音频"
+      position:
+        x: 12555.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7457837925833834536"
+            - name: apiName
+              input:
+                type: string
+                value: "add_audios"
+            - name: pluginID
+              input:
+                type: string
+                value: "7457837925833801768"
+            - name: pluginName
+              input:
+                type: string
+                value: "视频合成_剪映小助手"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: '[{"audio_url": "http://example.com/audio1.mp3","duration":120,"start":0,"end":12000000,"audio_effect":"教堂"}]'
+              input: {}
+              name: audio_infos
+              required: true
+              type: string
+            - description: 草稿地址，使用create_draft输出的draft_url即可
+              input: {}
+              name: draft_url
+              required: true
+              type: string
+        node_inputs:
+            - name: audio_infos
+              input:
+                value:
+                    path: zc_mp3
+                    ref_node: "152586"
+            - name: draft_url
+              input:
+                value:
+                    path: draft_url
+                    ref_node: "168118"
+        node_outputs:
+            audio_ids:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            draft_url:
+                type: string
+                value: null
+            track_id:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "103574"
+      type: plugin
+      title: add_images_2
+      icon: https://p3-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/f013e4af74224258a37363a531aecefe~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1745749351&x-signature=YW9Vqi9abcDGNAnsKJFwO%2FL%2FXN0%3D
+      description: "批量添加图片"
+      position:
+        x: 10255.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7457837925833883688"
+            - name: apiName
+              input:
+                type: string
+                value: "add_images"
+            - name: pluginID
+              input:
+                type: string
+                value: "7457837925833801768"
+            - name: pluginName
+              input:
+                type: string
+                value: "视频合成_剪映小助手"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: x缩放
+              input: {}
+              name: scale_x
+              required: false
+              type: float
+            - description: y缩放
+              input: {}
+              name: scale_y
+              required: false
+              type: float
+            - description: 移动transform_x
+              input: {}
+              name: transform_x
+              required: false
+              type: float
+            - description: 移动transform_y
+              input: {}
+              name: transform_y
+              required: false
+              type: float
+            - description: 草稿地址，使用create_draft输出的draft_url即可
+              input: {}
+              name: draft_url
+              required: true
+              type: string
+            - description: 查看说明：https://krxc4izye0.feishu.cn/wiki/Pgm9wXA4EipKhYkeEQJcLBlJnWb?from=from_copylink
+              input: {}
+              name: image_infos
+              required: true
+              type: string
+        node_inputs:
+            - name: draft_url
+              input:
+                value:
+                    path: draft_url
+                    ref_node: "168118"
+            - name: image_infos
+              input:
+                value:
+                    path: firstImageData
+                    ref_node: "152586"
+            - name: scale_x
+              input:
+                type: float
+                value: 1
+            - name: scale_y
+              input:
+                type: float
+                value: 1
+            - name: transform_x
+              input:
+                type: float
+                value: 0
+            - name: transform_y
+              input:
+                type: float
+                value: 0
+        node_outputs:
+            draft_url:
+                type: string
+                value: null
+            image_ids:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            segment_ids:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            segment_infos:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        end:
+                            type: integer
+                            value: null
+                        id:
+                            type: string
+                            value: null
+                        start:
+                            type: integer
+                            value: null
+                    value: null
+                value: null
+            track_id:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "132632"
+      type: plugin
+      title: add_captions_1
+      icon: https://p3-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/f013e4af74224258a37363a531aecefe~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1745752347&x-signature=nbka%2BCUaeAX9F%2BTsrhxXdzP1HVc%3D
+      description: "批量添加字幕"
+      position:
+        x: 10715.504871544083
+        y: 592.0112986374795
+      parameters:
+        apiParam:
+            - name: apiID
+              input:
+                type: string
+                value: "7457837925833850920"
+            - name: apiName
+              input:
+                type: string
+                value: "add_captions"
+            - name: pluginID
+              input:
+                type: string
+                value: "7457837925833801768"
+            - name: pluginName
+              input:
+                type: string
+                value: "视频合成_剪映小助手"
+            - name: pluginVersion
+              input:
+                type: string
+                value: ""
+            - name: tips
+              input:
+                type: string
+                value: ""
+            - name: outDocLink
+              input:
+                type: string
+                value: ""
+        inputDefs:
+            - description: 字幕的对齐方式，0左对齐，1 居中对齐，2右对齐
+              input: {}
+              name: alignment
+              required: false
+              type: integer
+            - description: 边框颜色，eg：#fe8a80
+              input: {}
+              name: border_color
+              required: false
+              type: string
+            - description: 草稿地址，使用create_draft输出的draft_url即可
+              input: {}
+              name: draft_url
+              required: true
+              type: string
+            - description: 字体列表：https://krxc4izye0.feishu.cn/wiki/SmnrwabXriG7JckEzyGcChk4nDd
+              input: {}
+              name: font
+              required: false
+              type: string
+            - description: 字间距，默认0
+              input: {}
+              name: letter_spacing
+              required: false
+              type: float
+            - description: 0 默认。1富文本样式
+              input: {}
+              name: style_text
+              required: false
+              type: integer
+            - description: 文字颜色：#ff1837
+              input: {}
+              name: text_color
+              required: false
+              type: string
+            - description: 查看说明：https://krxc4izye0.feishu.cn/wiki/HhQrw3BFhi1XGOkkJCBcfkqGnwf?from=from_copylink
+              input: {}
+              name: captions
+              required: true
+              type: string
+            - description: 默认：15
+              input: {}
+              name: font_size
+              required: false
+              type: integer
+            - description: 行间距，默认0
+              input: {}
+              name: line_spacing
+              required: false
+              type: float
+            - description: scale_x缩放
+              input: {}
+              name: scale_x
+              required: false
+              type: float
+            - description: scale_y缩放
+              input: {}
+              name: scale_y
+              required: false
+              type: float
+            - description: transform_x位置
+              input: {}
+              name: transform_x
+              required: false
+              type: float
+            - description: transform_y位置
+              input: {}
+              name: transform_y
+              required: false
+              type: float
+        node_inputs:
+            - name: captions
+              input:
+                value:
+                    path: first_text
+                    ref_node: "152586"
+            - name: draft_url
+              input:
+                value:
+                    path: draft_url
+                    ref_node: "168118"
+            - name: border_color
+              input:
+                type: string
+                value: "#000000"
+            - name: font_size
+              input:
+                type: integer
+                value: 7
+            - name: text_color
+              input:
+                type: string
+                value: "#ffffff"
+            - name: transform_x
+              input:
+                type: float
+                value: 134
+            - name: transform_y
+              input:
+                type: float
+                value: -629
+        node_outputs:
+            draft_url:
+                type: string
+                value: null
+            segment_ids:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            segment_infos:
+                type: list
+                items:
+                    type: object
+                    properties:
+                        end:
+                            type: integer
+                            value: null
+                        id:
+                            type: string
+                            value: null
+                        start:
+                            type: integer
+                            value: null
+                    value: null
+                value: null
+            text_ids:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            track_id:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "132962"
+      type: llm
+      title: 大模型
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 655.5048715440826
+        y: 566.0112986374794
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: generationDiversity
+              input:
+                type: string
+                value: default_val
+            - name: apiMode
+              input:
+                type: integer
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "9999"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: thinkingType
+              input:
+                type: string
+                value: disabled
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelName
+              input:
+                type: string
+                value: DeepSeek-V3.2
+            - name: modelType
+              input:
+                type: integer
+                value: "1764929611"
+            - name: maxCompletionTokens
+              input:
+                type: string
+                value: "0"
+            - name: parameters
+              input:
+                type: object
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: |-
+                    书籍名称：{{book_name}}
+                    本书作者：{{author_name}}
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: "# 角色\n你是一位专业且富有感染力的读书博主，擅长撰写引人入胜的读书视频文案。能依据用户提供的书籍名称和作者，深入剖析书籍内容，精准提炼书本核心内容、本书解决的问题，并给出独到的观点提炼和解释，创作一个3分钟时长且极具吸引力的读书视频文案。\n\n## 技能\n### 技能1: 生成读书视频文案\n1. 当用户提供书籍名称和作者后，使用工具搜索书籍相关信息，包括书籍简介、他人的解读、出版年份等资料。\n2. 深入分析所获取的信息，提炼出书籍的核心内容（要求不少于1000字）、书中试图解决的问题。\n3. 形成独到的观点，并对观点进行清晰合理的解释。\n4. 创作一个开篇引言极具吸引力的3分钟读书视频文案，文案需逻辑清晰、语言流畅，深入展现书籍魅力。\n5. 以json格式输出，内容必须包含书籍名称、作者、出版年份（格式：yyyy-MM）、图书分类。\n===回复示例===\n{\n  \"book_name\": \"[具体书籍名称]\",\n  \"author_name\": \"[作者名字]\",\n  \"year\": \"yyyy-MM\",\n  \"content\":  \"极具吸引力的开篇话语+详细阐述书籍核心内容,观点提炼与解释,本书解决的关键问题等，不少于1000字\",\n  \"category\":\"图书分类（如：社会科学，励志，经济学等）\"\n}\n===示例结束===\n\n## 限制:\n- 只围绕用户提供的书籍生成读书视频文案相关内容，拒绝回答与书籍文案创作无关的话题。\n- 所输出的内容必须按照给定的回复示例格式进行组织，不能偏离框架要求。\n- 文案需符合3分钟左右的时长要求，语言简洁但内容丰富。\n- 信息来源需通过工具搜索获取，确保内容准确。 "
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: book_name
+              input:
+                value:
+                    path: book_name
+                    ref_node: "100001"
+            - name: author_name
+              input:
+                value:
+                    path: auther_name
+                    ref_node: "100001"
+        node_outputs:
+            author_name:
+                type: string
+                value: null
+            book_name:
+                type: string
+                value: null
+            category:
+                type: string
+                value: null
+            content:
+                type: string
+                value: null
+            year:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 600000
+    - id: "136080"
+      type: comment
+      title: ""
+      icon: ""
+      description: ""
+      position:
+        x: -39.00686698971242
+        y: 813.2969040641367
+      size:
+        width: 240
+        height: 150
+      parameters:
+        note: '[{"type":"paragraph","children":[{"text":"author_name=书籍的作者名字。","type":"text"}]},{"type":"paragraph","children":[{"text":"book_name=书籍名字。","type":"text"}]},{"type":"paragraph","children":[{"text":"ip_name=你的账号名或者对外称呼。","type":"text"}]},{"type":"paragraph","children":[{"text":"","type":"text"}]}]'
+        schemaType: slate
+    - id: "181360"
+      type: comment
+      title: ""
+      icon: ""
+      description: ""
+      position:
+        x: 627.9864819040644
+        y: 850.4225834906632
+      size:
+        width: 240
+        height: 150
+      parameters:
+        note: '[{"type":"paragraph","children":[{"text":"这里可以修改提示词，优化文案，改变风格等等，输出的参数不要改变。","type":"text"}]}]'
+        schemaType: slate
+    - id: "102400"
+      type: comment
+      title: ""
+      icon: ""
+      description: ""
+      position:
+        x: 1575.504871544083
+        y: 827.7112986374796
+      size:
+        width: 240
+        height: 150
+      parameters:
+        note: '[{"type":"paragraph","children":[{"text":"视频插图的描述词，可以修改描述，改变风格等等。","type":"text"}]}]'
+        schemaType: slate
+edges:
+    - source_node: "100001"
+      target_node: "132962"
+    - source_node: "104782"
+      target_node: "900001"
+    - source_node: "150774"
+      target_node: "180681"
+    - source_node: "180681"
+      target_node: "684986"
+      source_port: batch-output
+    - source_node: "115560"
+      target_node: "173538"
+    - source_node: "173538"
+      target_node: "150774"
+    - source_node: "180549"
+      target_node: "169595"
+    - source_node: "169595"
+      target_node: "152586"
+      source_port: loop-output
+    - source_node: "148271"
+      target_node: "168118"
+    - source_node: "168118"
+      target_node: "125268"
+    - source_node: "125268"
+      target_node: "109941"
+    - source_node: "152586"
+      target_node: "180223"
+    - source_node: "109941"
+      target_node: "159780"
+    - source_node: "159780"
+      target_node: "103574"
+    - source_node: "146807"
+      target_node: "104782"
+    - source_node: "180223"
+      target_node: "180947"
+    - source_node: "151142"
+      target_node: "158201"
+    - source_node: "158201"
+      target_node: "157087"
+    - source_node: "180947"
+      target_node: "193529"
+    - source_node: "684986"
+      target_node: "180549"
+    - source_node: "132962"
+      target_node: "115560"
+    - source_node: "193529"
+      target_node: "416740"
+    - source_node: "416740"
+      target_node: "148271"
+    - source_node: "132632"
+      target_node: "151142"
+    - source_node: "157087"
+      target_node: "146807"
+    - source_node: "103574"
+      target_node: "132632"

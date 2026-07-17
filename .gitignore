@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Output files (generated videos, images, audio)
+output/
+*.mp4
+*.mp3
+*.wav
+*.m4a
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.bak
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Skill packaging
+*.skill
+
+# Environment variables
+.env
+.env.local
