@@ -18,8 +18,11 @@
 
 输出：
 - 16 个分镜的 3 分钟解说视频（1920×1080 MP4）
-- 每个分镜配 AI 插图 + TTS 配音 + 字幕
-- 全程约 119 秒，文件大小约 6MB
+- 每个分镜配 AI 插图 + TTS 配音 + 逐句单行字幕
+- **顶部进度条**：4 个板块标题高亮显示 + 播放进度线
+- **关键词高亮**：字幕中关键词以橙色标注（ASS 字幕格式）
+- 封面图含书名 + 作者，Ken Burns 缩放 + 淡入淡出转场
+- 全程约 193 秒，文件大小约 20MB
 
 **在线观看**：[https://chenjun198711.github.io/book-video-generator/](https://chenjun198711.github.io/book-video-generator/)
 
