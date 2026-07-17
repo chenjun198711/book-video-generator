@@ -19,6 +19,9 @@ output/
 *.wav
 *.m4a
 
+# Keep demo videos
+!demo/*.mp4
+
 # Temporary files
 temp/
 tmp/
