@@ -51,7 +51,7 @@
 ┌─────────────────────────────────┐
 │ 阶段4: 并行生成素材               │
 │  4a. AI 图像生成 → 16张插图       │
-│  4b. edge-tts → 16段配音MP3      │
+│  4b. TTS → 16段配音MP3            │
 └──────────┬──────────────────────┘
            ▼
 ┌─────────────────────────────────┐
@@ -78,10 +78,10 @@ book-video-generator/
 │   ├── CROSS_PLATFORM.md             # 各平台详细安装适配指南
 │   └── workflow-original.yaml        # 原始扣子工作流完整YAML（备份）
 └── scripts/
-    ├── generate_audio.py             # TTS语音生成（edge-tts，微软免费TTS）
+    ├── generate_audio.py             # TTS语音生成（火山引擎V1 API+X-Api-Key默认/edge-tts备选，含词级时间戳）
     ├── generate_image.py             # 跨平台AI图像生成（支持4种API后端）
     ├── generate_cover.py             # 封面图生成（Pillow，自动换行+模糊背景）
-    ├── compose_video.py              # 视频合成（ffmpeg两步法，主方案，含Ken Burns+转场+字体检测）
+    ├── compose_video.py              # 视频合成（ffmpeg两步法，主方案，含Ken Burns+转场+字体检测+逐句单行字幕）
     └── compose_video_moviepy.py      # 视频合成（moviepy方案，备用）
 ```
 
@@ -115,6 +115,17 @@ pip install edge-tts imageio-ffmpeg pillow
 
 > `imageio-ffmpeg` 会自动下载 ffmpeg 二进制，无需单独安装系统级 ffmpeg。
 
+### 2b. 配置 TTS 引擎（可选）
+
+默认使用 edge-tts（免费，无需配置）。如需切换到火山引擎 TTS（豆包语音合成 2.0，中文自然度更高，可商用）：
+
+```bash
+export VOLC_TTS_API_KEY="your-api-key"    # 火山引擎控制台 → API Key 管理获取
+```
+
+> 未设置凭证时自动使用 edge-tts，功能不受影响。
+> 火山引擎 TTS 2.0 不原生支持词级时间戳，脚本基于音频时长估算时间戳用于字幕同步。
+
 ### 3. 使用
 
 在 AI Agent 对话中直接说：
@@ -138,7 +149,7 @@ pip install edge-tts imageio-ffmpeg pillow
 | 标题进度条 LLM | 豆包 1.8 深度思考 | 平台 LLM（保留原 Prompt） |
 | 图像生成 | 扣子内置（model_id=8） | ImageGen / generate_image.py |
 | 抠图 | 扣子抠图插件 | 不需要（或 ImageGen 自带） |
-| TTS 语音 | 扣子内置 TTS | edge-tts（微软免费） |
+| TTS 语音 | 扣子内置 TTS | 火山引擎 TTS（默认）/ edge-tts（备选） |
 | 视频合成 | 剪映小助手插件 | ffmpeg（两步法） |
 
 ---
@@ -147,19 +158,35 @@ pip install edge-tts imageio-ffmpeg pillow
 
 ### generate_audio.py — TTS 语音生成
 
+双引擎架构：火山引擎 TTS（默认）+ edge-tts（备选），自动检测凭证切换。
+
 ```bash
-# 单句生成
+# 单句生成（自动选择引擎）
 python3 scripts/generate_audio.py --text "字幕文本" --output audio_001.mp3
 
+# 查看所有可用音色
+python3 scripts/generate_audio.py --list-voices
+
 # 批量生成（从 JSON 文件）
-python3 scripts/generate_audio.py --batch captions.json --output-dir audio/ --voice zh-CN-XiaoxiaoNeural
+python3 scripts/generate_audio.py --batch captions.json --output-dir audio/
+
+# 强制指定引擎
+python3 scripts/generate_audio.py --text "字幕" --output audio.mp3 --engine volcano
+python3 scripts/generate_audio.py --text "字幕" --output audio.mp3 --engine edge
 ```
 
-可选语音：
-- `zh-CN-XiaoxiaoNeural` — 女声，活泼（默认）
-- `zh-CN-YunxiNeural` — 男声，沉稳
-- `zh-CN-XiaoyiNeural` — 女声，温柔
-- `zh-CN-YunjianNeural` — 男声，阳光
+火山引擎音色（需 VOLC_TTS_API_KEY，豆包语音合成 2.0）：
+- `zh_female_zhixingnv_uranus_bigtts` — 知性女声 2.0，适合读书解说（默认）
+- `zh_male_xuanyijieshuo_uranus_bigtts` — 悬疑解说 2.0
+- `zh_male_baqiqingshu_uranus_bigtts` — 霸气青叔 2.0
+- `zh_female_qingxinnvsheng_uranus_bigtts` — 清新女声 2.0
+- `zh_male_cixingjieshuonan_uranus_bigtts` — 磁性解说男声 2.0
+
+edge-tts 音色（免费，无需配置）：
+- `zh-CN-XiaoxiaoNeural` — 晓晓，女声活泼（默认）
+- `zh-CN-YunxiNeural` — 云希，男声沉稳
+- `zh-CN-XiaoyiNeural` — 晓伊，女声温柔
+- `zh-CN-YunjianNeural` — 云健，男声阳光
 
 ### generate_image.py — 跨平台 AI 图像生成
 
@@ -211,7 +238,7 @@ python3 scripts/compose_video.py < segments.json
 - 分辨率：1920×1080（16:9）
 - 帧率：24fps
 - 动态效果：Ken Burns 缓慢缩放 + 0.3s 淡入淡出转场
-- 字幕：白色文字 + 黑色描边，底部居中
+- 字幕：逐句单行显示，基于 TTS 词级时间戳精确同步语音，白色加粗文字+黑色描边，36pt，底部居中
 - 字体：自动检测系统可用中文字体（Windows: 微软雅黑 / macOS: PingFang SC / Linux: Noto Sans CJK）
 
 ---
@@ -233,15 +260,14 @@ python3 scripts/compose_video.py < segments.json
 ## 已知限制
 
 1. **AI 插图水印** — 部分图像生成 API 会在图片右下角添加水印，合成前可用 PIL 裁剪底部
-2. **标题进度条** — 阶段3生成了板块标题，但当前 compose_video.py 未将其渲染为视频中的进度条 overlay
-3. **图像风格一致性** — 原工作流用固定颜色参数保证风格统一，当前脚本的 API 调用未强制这些参数
+2. **图像风格一致性** — 原工作流用固定颜色参数保证风格统一，当前脚本的 API 调用未强制这些参数
 
 ---
 
 ## 技术栈
 
 - **LLM** — 任何支持中文的 LLM（DeepSeek / GPT / Claude / 豆包等）
-- **TTS** — [edge-tts](https://github.com/rany2/edge-tts)（微软 Edge 免费 TTS）
+- **TTS** — [火山引擎 TTS](https://www.volcengine.com/product/voice-tech)（默认，豆包语音合成 2.0，V1 API + X-Api-Key）/ [edge-tts](https://github.com/rany2/edge-tts)（备选，微软免费 TTS）
 - **视频合成** — [ffmpeg](https://ffmpeg.org/)（通过 [imageio-ffmpeg](https://github.com/imageio/imageio-ffmpeg) 自动提供二进制）
 - **图像生成** — OpenAI DALL-E / Stability AI / 火山引擎 / 本地 SD WebUI
 
