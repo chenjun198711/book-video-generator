@@ -1,5 +1,8 @@
 ---
 name: book-video-generator
+slug: book-video-generator
+version: 2.2.0
+displayName: 三分钟精读一本书视频生成器
 description: 三分钟精读一本书视频生成器。输入书名+作者，一键生成3分钟读书解说视频（书评文案→AI插图→TTS配音→字幕→最终合成MP4）。触发词：三分钟精读书、生成读书视频、精读一本书、book video、做读书视频、书评视频。跨平台兼容 WorkBuddy / OpenClaw / Codex CLI / TRAE Work。
 ---
 
@@ -47,7 +50,7 @@ description: 三分钟精读一本书视频生成器。输入书名+作者，一
 |------|------|------|
 | `book_name` | 书籍名称 | 是 |
 | `author_name` | 作者名称 | 是 |
-| `ip_name` | 账号名称（用于视频水印） | 否，默认"陈老师AI" |
+| `ip_name` | 账号名称（用于封面图底部水印） | 否，默认不显示 |
 
 ## 环境准备
 
@@ -169,9 +172,46 @@ python3 scripts/generate_audio.py --batch captions.json --output-dir audio/ --vo
 
 #### 4c. 开场封面图
 
-为视频第一帧生成专属封面图，包含书名、作者等元素。
+为视频第一帧生成专属封面图（1920x1080），包含书名、作者、品牌文字。
 
-标题进度条可作为 HTML/SVG 渲染后截图。
+**操作**：运行 `python3 scripts/generate_cover.py`
+
+```bash
+# 用第一张分镜图做模糊背景（推荐，与视频风格一致）
+python3 scripts/generate_cover.py \
+  --book-name "原子习惯" \
+  --author "James Clear" \
+  --output output/原子习惯/images/cover.png \
+  --bg output/原子习惯/images/scene_000.png
+
+# 无背景图，使用深蓝渐变
+python3 scripts/generate_cover.py \
+  --book-name "原子习惯" \
+  --author "James Clear" \
+  --output output/原子习惯/images/cover.png
+```
+
+**封面布局**：
+- 顶部：「3 分钟精读一本书」品牌文字 + 橙色分隔线（#FF7F72，与分镜主角上衣同色）
+- 中部：书名大字（自动换行居中，80pt）
+- 中下：作者名（42pt）
+- 底部：账号名称水印（**可选**，通过 `--ip-name` 指定，不传则不显示）
+
+**字体**：自动检测系统中文字体（Windows: 微软雅黑 / macOS: PingFang SC / Linux: Noto Sans CJK），无需手动修改。
+
+> 封面图在阶段 5 合成时，通过 segments.json 中的 `cover` 字段指定，会替换第一分镜的图片（保持开场音频不变）。
+>
+> ```json
+> {
+>   "output": "output/书名_三分钟精读书.mp4",
+>   "cover": "output/书名/images/cover.png",
+>   "segments": [
+>     {"image": "images/scene_000.png", "audio": "audio/audio_000.mp3", "caption": "字幕文本"},
+>     ...
+>   ]
+> }
+> ```
+> `cover` 字段可选，不传则使用第一分镜原图作为开场画面。
 
 ### 阶段 5：视频合成
 
@@ -180,18 +220,23 @@ python3 scripts/generate_audio.py --batch captions.json --output-dir audio/ --vo
 **操作**：运行 `python3 scripts/compose_video.py`，该脚本执行：
 1. 计算每个分镜时长（基于 TTS 音频时长 + 0.3s 间隔）
 2. 图片缩放/裁剪为 1920x1080（16:9）
-3. 使用 ffmpeg 将图片+音频合成为视频片段
-4. 添加字幕（SRT 格式，白色文字+黑色描边，字号 7% 屏幕高度）
-5. 拼接所有片段为完整视频
+3. 为每个分镜添加 **Ken Burns 缓慢缩放**效果（偶数分镜放大 1.0→1.1，奇数分镜缩小 1.1→1.0）
+4. 为每个分镜添加 **0.3s 淡入淡出转场**（dip-to-black）
+5. 使用 ffmpeg 将图片+音频合成为视频片段
+6. 添加字幕（SRT 格式，白色文字+黑色描边）
+7. 拼接所有片段为完整视频
 
 **字幕参数**（对应原工作流 add_captions_1 节点）：
 - 字体颜色：白色 (#FFFFFF)
 - 边框颜色：黑色 (#000000)
-- 字号：相对于 1080p 约 76px
+- 字号：28pt
 - 位置：底部居中
+- 字体：**自动检测**系统可用中文字体（Windows: 微软雅黑 / macOS: PingFang SC / Linux: Noto Sans CJK SC），无需手动修改
 
-> Windows 系统默认使用微软雅黑字体（C:/Windows/Fonts/msyh.ttc）。
-> macOS / Linux 系统需修改 compose_video.py 中的 FontName 为系统可用中文字体（如 Noto Sans CJK SC）。
+**动态效果参数**：
+- Ken Burns 缩放速率：每帧 +0.0008（约 3 秒内从 1.0 到 1.024）
+- 缩放上限：1.1x
+- 转场淡入淡出时长：0.3s（短于 0.6s 的分镜自动减半）
 
 ### 输出
 
@@ -269,5 +314,6 @@ TRAE Work 通过 MCP 接入图像生成服务。在 TRAE 的 MCP 配置中添加
 
 - `references/prompts.md` — 所有 LLM 提示词原文（平台无关，可直接复用）
 - `references/workflow-original.yaml` — 原始扣子工作流（完整 YAML 备份）
-- `scripts/compose_video.py` — 视频合成脚本（纯 Python + ffmpeg，跨平台）
+- `scripts/compose_video.py` — 视频合成脚本（纯 Python + ffmpeg，跨平台，含 Ken Burns 缩放 + 淡入淡出转场 + 字体自动检测 + 封面图支持）
 - `scripts/generate_audio.py` — TTS 语音生成脚本（纯 Python + edge-tts，跨平台）
+- `scripts/generate_cover.py` — 封面图生成脚本（纯 Python + Pillow，自动换行 + 模糊背景 + 字体自动检测）

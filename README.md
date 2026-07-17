@@ -80,7 +80,8 @@ book-video-generator/
 └── scripts/
     ├── generate_audio.py             # TTS语音生成（edge-tts，微软免费TTS）
     ├── generate_image.py             # 跨平台AI图像生成（支持4种API后端）
-    ├── compose_video.py              # 视频合成（ffmpeg两步法，主方案）
+    ├── generate_cover.py             # 封面图生成（Pillow，自动换行+模糊背景）
+    ├── compose_video.py              # 视频合成（ffmpeg两步法，主方案，含Ken Burns+转场+字体检测）
     └── compose_video_moviepy.py      # 视频合成（moviepy方案，备用）
 ```
 
@@ -196,6 +197,7 @@ python3 scripts/compose_video.py < segments.json
 ```json
 {
   "output": "output/书名_三分钟精读书.mp4",
+  "cover": "images/cover.png",
   "segments": [
     {"image": "images/scene_000.png", "audio": "audio/audio_000.mp3", "caption": "字幕文本"},
     {"image": "images/scene_001.png", "audio": "audio/audio_001.mp3", "caption": "字幕文本"}
@@ -203,11 +205,14 @@ python3 scripts/compose_video.py < segments.json
 }
 ```
 
+> `cover` 字段可选。指定后会用封面图替换第一分镜的图片（保持开场音频不变）。
+
 合成参数：
 - 分辨率：1920×1080（16:9）
 - 帧率：24fps
+- 动态效果：Ken Burns 缓慢缩放 + 0.3s 淡入淡出转场
 - 字幕：白色文字 + 黑色描边，底部居中
-- 字体：Windows 微软雅黑 / macOS PingFang SC / Linux Noto Sans CJK
+- 字体：自动检测系统可用中文字体（Windows: 微软雅黑 / macOS: PingFang SC / Linux: Noto Sans CJK）
 
 ---
 
@@ -225,13 +230,11 @@ python3 scripts/compose_video.py < segments.json
 
 ---
 
-## 已知限制（第二版会进行优化）
+## 已知限制
 
 1. **AI 插图水印** — 部分图像生成 API 会在图片右下角添加水印，合成前可用 PIL 裁剪底部
 2. **标题进度条** — 阶段3生成了板块标题，但当前 compose_video.py 未将其渲染为视频中的进度条 overlay
 3. **图像风格一致性** — 原工作流用固定颜色参数保证风格统一，当前脚本的 API 调用未强制这些参数
-4. **字幕字体** — 依赖系统中文字体，跨平台需调整 `compose_video.py` 中的 `FontName`
-5. **视频转场** — 当前为硬切，无转场特效
 
 ---
 

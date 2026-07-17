@@ -6,6 +6,7 @@
 
 import json
 import os
+import platform
 import sys
 
 from moviepy import (
@@ -15,6 +16,38 @@ from moviepy import (
     CompositeVideoClip,
     concatenate_videoclips,
 )
+
+
+def detect_font_path():
+    """自动检测系统可用的中文字体文件路径"""
+    system = platform.system().lower()
+    candidates = []
+
+    if system == "windows":
+        candidates = [
+            "C:/Windows/Fonts/msyh.ttc",
+            "C:/Windows/Fonts/msyhbd.ttc",
+            "C:/Windows/Fonts/simhei.ttf",
+        ]
+    elif system == "darwin":
+        candidates = [
+            "/System/Library/Fonts/PingFang.ttc",
+            "/System/Library/Fonts/STHeiti Medium.ttc",
+            "/Library/Fonts/Arial Unicode.ttf",
+        ]
+    else:
+        candidates = [
+            "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+        ]
+
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+
+    print("警告：未找到中文字体，字幕可能无法显示中文", file=sys.stderr)
+    return None
 
 
 def compose_video(segments, output_path, video_width=1920, video_height=1080, fps=24):
@@ -53,10 +86,11 @@ def compose_video(segments, output_path, video_width=1920, video_height=1080, fp
 
         # 字幕：白色文字+黑色描边
         if caption:
+            font_path = detect_font_path()
             txt_clip = (
                 TextClip(
                     text=caption,
-                    font="C:/Windows/Fonts/msyh.ttc",
+                    font=font_path or "C:/Windows/Fonts/msyh.ttc",
                     font_size=76,
                     color="white",
                     stroke_color="black",

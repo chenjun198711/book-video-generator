@@ -36,6 +36,51 @@ except ImportError:
     FFMPEG = "ffmpeg"
 
 
+def detect_font():
+    """自动检测系统可用的中文字体，返回 ffmpeg subtitles 滤镜可用的 FontName"""
+    import platform
+
+    system = platform.system().lower()
+    candidates = []
+
+    if system == "windows":
+        candidates = [
+            ("C:/Windows/Fonts/msyh.ttc", "Microsoft YaHei"),
+            ("C:/Windows/Fonts/msyhbd.ttc", "Microsoft YaHei"),
+            ("C:/Windows/Fonts/simhei.ttf", "SimHei"),
+            ("C:/Windows/Fonts/simsun.ttc", "SimSun"),
+        ]
+    elif system == "darwin":
+        candidates = [
+            ("/System/Library/Fonts/PingFang.ttc", "PingFang SC"),
+            ("/System/Library/Fonts/STHeiti Medium.ttc", "STHeiti"),
+            ("/Library/Fonts/Arial Unicode.ttf", "Arial Unicode MS"),
+        ]
+    else:
+        candidates = [
+            ("/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc", "Noto Sans CJK SC"),
+            ("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", "Noto Sans CJK SC"),
+            ("/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc", "WenQuanYi Zen Hei"),
+            ("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc", "WenQuanYi Micro Hei"),
+        ]
+
+    for path, name in candidates:
+        if os.path.exists(path):
+            return name
+
+    try:
+        result = subprocess.run(
+            ["fc-list", ":lang=zh", "family"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if result.stdout.strip():
+            return result.stdout.strip().split("\n")[0].split(",")[0].strip()
+    except (FileNotFoundError, subprocess.SubprocessError, subprocess.TimeoutExpired):
+        pass
+
+    return "Sans"
+
+
 def get_duration(audio_path: str) -> float:
     """使用 ffmpeg 获取音频时长"""
     cmd = [FFMPEG, "-i", audio_path]
@@ -76,6 +121,7 @@ def compose_video(
     segments,
     output_path=None,
     output=None,
+    cover=None,
     video_width=1920,
     video_height=1080,
     fps=24,
@@ -88,6 +134,12 @@ def compose_video(
 
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
     tmpdir = tempfile.mkdtemp(prefix="book_video_")
+
+    # 如果指定了封面图，替换第一分镜的图片（保持音频不变）
+    if cover and os.path.exists(cover) and len(segments) > 0:
+        original_img = segments[0].get("image", "")
+        segments[0]["image"] = cover
+        print(f"封面图已启用：{cover}（替换原第一分镜图 {original_img}）")
 
     clip_files = []
     durations = []
@@ -107,14 +159,26 @@ def compose_video(
         durations.append(dur)
         clip_out = os.path.join(tmpdir, f"clip_{i:03d}.mp4")
 
+        total_frames = max(1, int(dur * fps))
+        fade_dur = min(0.3, dur / 2)
+
+        # Ken Burns: 偶数分镜缓慢放大 1.0→1.1，奇数分镜缓慢缩小 1.1→1.0
+        if i % 2 == 0:
+            zoom_expr = "min(zoom+0.0008,1.1)"
+        else:
+            zoom_expr = "if(eq(on,0),1.1,max(zoom-0.0008,1.0))"
+
         vf = (
             f"scale={video_width}:{video_height}:force_original_aspect_ratio=decrease,"
-            f"pad={video_width}:{video_height}:(ow-iw)/2:(oh-ih)/2:black"
+            f"pad={video_width}:{video_height}:(ow-iw)/2:(oh-ih)/2:black,"
+            f"zoompan=z='{zoom_expr}':d={total_frames}:s={video_width}x{video_height}:fps={fps},"
+            f"fade=t=in:st=0:d={fade_dur},"
+            f"fade=t=out:st={max(0, dur - fade_dur)}:d={fade_dur}"
         )
 
         cmd = [
             FFMPEG, "-y", "-loop", "1", "-i", img, "-i", aud,
-            "-c:v", "libx264", "-tune", "stillimage",
+            "-c:v", "libx264",
             "-c:a", "aac", "-b:a", "192k", "-pix_fmt", "yuv420p",
             "-r", str(fps), "-t", str(dur), "-vf", vf, "-shortest",
             clip_out
@@ -142,8 +206,9 @@ def compose_video(
     # 3. 烧录字幕到最终视频
     # Windows 下 SRT 路径使用正斜杠 + 冒号转义
     srt_escaped = srt_path.replace("\\", "/").replace(":", "\\:")
-    # 使用默认字体（让 ffmpeg 自动选择），如需指定字体，可修改 ForceStyle 中的 FontName
-    style = "FontName=Microsoft YaHei,FontSize=28,PrimaryColour=&HFFFFFF,OutlineColour=&H000000,Outline=1,Alignment=2"
+    font_name = detect_font()
+    print(f"字幕字体：{font_name}")
+    style = f"FontName={font_name},FontSize=28,PrimaryColour=&HFFFFFF,OutlineColour=&H000000,Outline=1,Alignment=2"
 
     subprocess.run(
         [FFMPEG, "-y", "-i", no_subs, "-vf",
