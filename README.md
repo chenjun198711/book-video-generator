@@ -21,7 +21,9 @@
 - 每个分镜配 AI 插图 + TTS 配音 + 字幕
 - 全程约 119 秒，文件大小约 6MB
 
-**演示视频**：[`demo/原子习惯_三分钟精读书.mp4`](demo/原子习惯_三分钟精读书.mp4)（点击在线播放）
+**在线观看**：[https://chenjun198711.github.io/book-video-generator/](https://chenjun198711.github.io/book-video-generator/)
+
+> 也可直接下载视频文件：[`demo/原子习惯_三分钟精读书.mp4`](demo/原子习惯_三分钟精读书.mp4)
 
 ---
 
